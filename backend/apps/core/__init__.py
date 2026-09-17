@@ -1,0 +1,1 @@
+"""Shared helpers: pagination, exceptions, base models, permission utilities."""
