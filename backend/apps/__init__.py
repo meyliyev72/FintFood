@@ -1,0 +1,1 @@
+"""FintFood domain apps package."""
