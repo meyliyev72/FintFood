@@ -23,6 +23,18 @@ ALLOWED_HOSTS = [
     if h.strip()
 ]
 
+# Render web services set RENDER_EXTERNAL_URL = https://<service>.onrender.com
+# and RENDER_INTERNAL_HOSTNAME = <service>.onrender.com; allow both so the
+# deployed app answers health checks and browser requests without setup.
+from urllib.parse import urlparse
+
+_render_host = os.environ.get("RENDER_INTERNAL_HOSTNAME")
+if not _render_host:
+    _render_url = os.environ.get("RENDER_EXTERNAL_URL")
+    _render_host = urlparse(_render_url).netloc if _render_url else ""
+if _render_host and _render_host not in ALLOWED_HOSTS:
+    ALLOWED_HOSTS.append(_render_host)
+
 SECURE_SSL_REDIRECT = env_bool("DJANGO_SECURE_SSL_REDIRECT", True)
 SESSION_COOKIE_SECURE = env_bool("SESSION_COOKIE_SECURE", True)
 CSRF_COOKIE_SECURE = env_bool("CSRF_COOKIE_SECURE", True)

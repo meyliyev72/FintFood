@@ -1,0 +1,82 @@
+# FintFood — Render blueprint
+# Render dashboard: New -> Blueprint -> bu repo'ni tanlang.
+# Qo'lma yo'riqnoma: https://render.com/docs/blueprint-spec
+
+databases:
+  - name: fintfood-db
+    plan: free
+    databaseName: fintfood
+    user: fintfood
+
+services:
+  - type: web
+    name: fintfood-backend
+    runtime: python
+    rootDir: backend
+    region: frankfurt
+    plan: free
+    healthCheckPath: /api/v1/schema/
+    buildCommand: pip install --upgrade pip && pip install -r requirements.txt
+    preDeployCommand: python manage.py migrate --noinput && python manage.py collectstatic --noinput
+    startCommand: gunicorn config.wsgi:application --bind 0.0.0.0:$PORT --workers 2 --timeout 60
+    envVars:
+      - key: DJANGO_SETTINGS_MODULE
+        value: config.settings.production
+      - key: DJANGO_DEBUG
+        value: "false"
+      - key: DJANGO_SECRET_KEY
+        generateValue: true
+      - key: JWT_SECURE_COOKIES
+        value: "true"
+      - key: EMAIL_BACKEND
+        value: django.core.mail.backends.console.EmailBackend
+      - key: DATABASE_NAME
+        fromDatabase:
+          name: fintfood-db
+          property: database
+      - key: DATABASE_USER
+        fromDatabase:
+          name: fintfood-db
+          property: user
+      - key: DATABASE_PASSWORD
+        fromDatabase:
+          name: fintfood-db
+          property: password
+      - key: DATABASE_HOST
+        fromDatabase:
+          name: fintfood-db
+          property: host
+      - key: DATABASE_PORT
+        fromDatabase:
+          name: fintfood-db
+          property: port
+      - key: CORS_ALLOWED_ORIGINS
+        fromService:
+          type: web
+          name: fintfood-frontend
+          property: url
+      - key: CSRF_TRUSTED_ORIGINS
+        fromService:
+          type: web
+          name: fintfood-frontend
+          property: url
+      - key: FRONTEND_URL
+        fromService:
+          type: web
+          name: fintfood-frontend
+          property: url
+
+  - type: web
+    name: fintfood-frontend
+    runtime: node
+    rootDir: frontend
+    region: frankfurt
+    plan: free
+    buildCommand: npm ci && npm run build
+    startCommand: npm run start
+    envVars:
+      - key: NEXT_PUBLIC_API_URL
+        fromService:
+          type: web
+          name: fintfood-backend
+          property: url
