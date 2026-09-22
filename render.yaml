@@ -17,8 +17,7 @@ services:
     plan: free
     healthCheckPath: /api/v1/schema/
     buildCommand: pip install --upgrade pip && pip install -r requirements.txt
-    preDeployCommand: python manage.py migrate --noinput && python manage.py collectstatic --noinput
-    startCommand: gunicorn config.wsgi:application --bind 0.0.0.0:$PORT --workers 2 --timeout 60
+    startCommand: python manage.py migrate --noinput && python manage.py collectstatic --noinput && gunicorn config.wsgi:application --bind 0.0.0.0:$PORT --workers 2 --timeout 60
     envVars:
       - key: DJANGO_SETTINGS_MODULE
         value: config.settings.production
@@ -51,20 +50,11 @@ services:
           name: fintfood-db
           property: port
       - key: CORS_ALLOWED_ORIGINS
-        fromService:
-          type: web
-          name: fintfood-frontend
-          property: url
+        value: https://fintfood-frontend.onrender.com
       - key: CSRF_TRUSTED_ORIGINS
-        fromService:
-          type: web
-          name: fintfood-frontend
-          property: url
+        value: https://fintfood-frontend.onrender.com
       - key: FRONTEND_URL
-        fromService:
-          type: web
-          name: fintfood-frontend
-          property: url
+        value: https://fintfood-frontend.onrender.com
 
   - type: web
     name: fintfood-frontend
@@ -76,7 +66,4 @@ services:
     startCommand: npm run start
     envVars:
       - key: NEXT_PUBLIC_API_URL
-        fromService:
-          type: web
-          name: fintfood-backend
-          property: url
+        value: https://fintfood-backend.onrender.com
