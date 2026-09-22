@@ -7,6 +7,7 @@ Stricter security posture than config.settings.base. Enable with:
 """
 
 import os
+from urllib.parse import urlparse
 
 from .base import *  # noqa: F401,F403
 from .base import env_bool, os
@@ -26,8 +27,6 @@ ALLOWED_HOSTS = [
 # Render web services set RENDER_EXTERNAL_URL = https://<service>.onrender.com
 # and RENDER_INTERNAL_HOSTNAME = <service>.onrender.com; allow both so the
 # deployed app answers health checks and browser requests without setup.
-from urllib.parse import urlparse
-
 _render_host = os.environ.get("RENDER_INTERNAL_HOSTNAME")
 if not _render_host:
     _render_url = os.environ.get("RENDER_EXTERNAL_URL")
