@@ -102,6 +102,28 @@ python manage.py test apps.accounts.tests apps.recipes.tests `
 Tests run against an isolated SQLite database in the OS temp dir — fast and
 hermetic, no PostgreSQL required.
 
+## Deploy (Render)
+
+Repo'da `render.yaml` blueprint bor — backend (Django API), frontend (Next.js) va
+PostgreSQL'ni birga deploy qiladi.
+
+1. Reponi Git hosting (GitHub) ga push qiling.
+2. [render.com](https://render.com) → **New → Blueprint** → reponi tanlang.
+3. Render `fintfood-db`, `fintfood-backend` va `fintfood-frontend` ni
+   yaratadi (barcha env sozlamalari blueprint'da; `DJANGO_SECRET_KEY` avtomatik
+   generatsiya qilinadi).
+4. Deploy tugagach: backend `https://fintfood-backend.onrender.com`, frontend
+   `https://fintfood-frontend.onrender.com` da ishlaydi.
+
+Eslatmalar:
+
+- Demo ma'lumot yuklash uchun Render dashboard → backend service → **Shell**
+  da `python manage.py seed_data` ni ishga tushiring.
+- Uploag qilingan media fayllar Render'da diskka yoziladi va har deploy'da
+  tozalanadi. Uzluksiz saqlash uchun `DJANGO_S3_MEDIA=true` va S3 env vars
+  qo'shing (qarang: `backend/config/settings/production.py`).
+- Free PostgreSQL 30 kundan keyin tozalanadi — real ish uchun paid plan tanlang.
+
 ## Notes on the local PostgreSQL
 
 The dev PostgreSQL lives on port 5434. Two environment quirks worth knowing:
