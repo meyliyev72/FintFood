@@ -16,6 +16,12 @@ DEBUG = False
 
 SECRET_KEY = os.environ["DJANGO_SECRET_KEY"]
 
+# Render managed PostgreSQL requires TLS; force it so `migrate` (run at
+# startup) never hangs on an insecure/ambiguous connection attempt.
+DATABASES["default"]["OPTIONS"] = {
+    "sslmode": os.environ.get("DATABASE_SSLMODE", "require"),
+}
+
 ALLOWED_HOSTS = [
     h.strip()
     for h in os.environ.get(
