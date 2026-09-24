@@ -1,4 +1,7 @@
-# FintFood — Render blueprint
+# FintFood — Render blueprint (single-service deployment)
+# Rend backenda faqat bitta web service bor: Django backend
+# o'zi build qilingan Next.js frontend'ni ham serve qiladi
+# (WHITENOISE_ROOT -> frontend/out), alohida frontend service kerak emas.
 # Render dashboard: New -> Blueprint -> bu repo'ni tanlang.
 # Qo'lma yo'riqnoma: https://render.com/docs/blueprint-spec
 
@@ -17,7 +20,7 @@ services:
     region: frankfurt
     plan: free
     healthCheckPath: /api/v1/schema/
-    buildCommand: pip install --upgrade pip && pip install -r requirements.txt
+    buildCommand: cd ../frontend && npm ci && npm run build && cd ../backend && pip install --upgrade pip && pip install -r requirements.txt
     startCommand: python manage.py migrate --noinput && python manage.py collectstatic --noinput && gunicorn config.wsgi:application --bind 0.0.0.0:$PORT --workers 2 --timeout 60
     envVars:
       - key: DJANGO_SETTINGS_MODULE
@@ -55,20 +58,8 @@ services:
           name: fintfood-db
           property: port
       - key: CORS_ALLOWED_ORIGINS
-        value: https://fintfood-frontend.onrender.com
+        value: https://fintfood-backend.onrender.com
       - key: CSRF_TRUSTED_ORIGINS
-        value: https://fintfood-frontend.onrender.com
+        value: https://fintfood-backend.onrender.com
       - key: FRONTEND_URL
-        value: https://fintfood-frontend.onrender.com
-
-  - type: web
-    name: fintfood-frontend
-    runtime: node
-    rootDir: frontend
-    region: frankfurt
-    plan: free
-    buildCommand: npm ci && npm run build
-    startCommand: npm run start
-    envVars:
-      - key: NEXT_PUBLIC_API_URL
         value: https://fintfood-backend.onrender.com
