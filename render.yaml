@@ -24,6 +24,10 @@ services:
         value: config.settings.production
       - key: DJANGO_DEBUG
         value: "false"
+      - key: DJANGO_ALLOWED_HOSTS
+        value: fintfood-backend.onrender.com
+      - key: DATABASE_SSLMODE
+        value: require
       - key: DJANGO_SECRET_KEY
         generateValue: true
       - key: JWT_SECURE_COOKIES
