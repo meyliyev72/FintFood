@@ -2,7 +2,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { getRecipes, type RecipeSummary } from "@/lib/api";
 
-export const revalidate = 30;
+export const dynamic = "force-dynamic";
 
 function RecipeCard({ recipe }: { recipe: RecipeSummary }) {
   return (
