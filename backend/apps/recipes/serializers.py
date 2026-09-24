@@ -185,7 +185,9 @@ class RecipeWriteSerializer(serializers.ModelSerializer):
     id = serializers.IntegerField(read_only=True)
     slug = serializers.SlugField(read_only=True)
     cover_image = serializers.ImageField(read_only=True)
-    ingredients = serializers.ListField(child=IngredientInputSerializer(), write_only=True)
+    ingredients = serializers.ListField(
+        child=IngredientInputSerializer(), write_only=True, required=False
+    )
     steps = serializers.ListField(child=StepInputSerializer(), write_only=True, required=False)
     extra_images = serializers.ListField(
         child=serializers.ImageField(), write_only=True, required=False
@@ -224,15 +226,26 @@ class RecipeWriteSerializer(serializers.ModelSerializer):
         return value
 
     def validate(self, attrs):
-        if not attrs.get("ingredients"):
-            raise serializers.ValidationError(
-                {"ingredients": "At least one ingredient is required."}
-            )
-        steps = attrs.get("steps") or []
-        if not steps:
-            raise serializers.ValidationError(
-                {"steps": "At least one instruction step is required."}
-            )
+        ingredients = attrs.get("ingredients")
+        steps = attrs.get("steps")
+        if self.instance is None:
+            if not ingredients:
+                raise serializers.ValidationError(
+                    {"ingredients": "At least one ingredient is required."}
+                )
+            if not steps:
+                raise serializers.ValidationError(
+                    {"steps": "At least one instruction step is required."}
+                )
+        else:
+            if ingredients is not None and not ingredients:
+                raise serializers.ValidationError(
+                    {"ingredients": "At least one ingredient is required."}
+                )
+            if steps is not None and not steps:
+                raise serializers.ValidationError(
+                    {"steps": "At least one instruction step is required."}
+                )
         for field in ("cooking_time", "prep_time", "servings"):
             value = attrs.get(field)
             if value is not None and value <= 0:

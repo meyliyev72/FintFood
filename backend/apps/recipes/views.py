@@ -41,7 +41,10 @@ class ReportViewSet(mixins.CreateModelMixin, mixins.ListModelMixin, viewsets.Gen
     permission_classes = [IsAuthenticatedOrReadOnly]
 
     def get_queryset(self):
-        return Report.objects.filter(reported_by=self.request.user)
+        user = self.request.user
+        if not user.is_authenticated:
+            return Report.objects.none()
+        return Report.objects.filter(reported_by=user)
 
 
 class RecipeViewSet(
@@ -116,7 +119,11 @@ class RecipeViewSet(
             return Response(
                 {"detail": "Authentication required."}, status=status.HTTP_401_UNAUTHORIZED
             )
-        queryset = Recipe.objects.with_stats(user).filter(author=user)
+        queryset = (
+            Recipe.objects.with_stats(user)
+            .filter(author=user)
+            .order_by("-created_at")
+        )
         page = self.paginate_queryset(queryset)
         serializer = RecipeListSerializer(page, many=True, context={"request": request})
         return self.get_paginated_response(serializer.data)
