@@ -1,5 +1,9 @@
+from pathlib import Path
+
+from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.db.models import Count, Q
+from django.http import HttpResponse, HttpResponseNotFound
 
 from rest_framework.permissions import IsAdminUser, IsAuthenticatedOrReadOnly
 from rest_framework.response import Response
@@ -12,6 +16,18 @@ from apps.recipes.models import Recipe, Report
 from apps.reviews.models import Review
 
 User = get_user_model()
+
+
+def frontend_index(request):
+    """Serve the built Next.js export for SPA-style (catch-all) routes."""
+    index_path = Path(settings.WHITENOISE_ROOT) / "index.html"
+    try:
+        body = index_path.read_bytes()
+    except FileNotFoundError:
+        return HttpResponseNotFound(
+            "Frontend build not found. Run `cd frontend && npm run build` first."
+        )
+    return HttpResponse(body, content_type="text/html")
 
 
 class HealthView(APIView):
