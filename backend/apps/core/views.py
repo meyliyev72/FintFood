@@ -19,15 +19,37 @@ User = get_user_model()
 
 
 def frontend_index(request):
-    """Serve the built Next.js export for SPA-style (catch-all) routes."""
-    index_path = Path(settings.WHITENOISE_ROOT) / "index.html"
-    try:
-        body = index_path.read_bytes()
-    except FileNotFoundError:
-        return HttpResponseNotFound(
-            "Frontend build not found. Run `cd frontend && npm run build` first."
-        )
-    return HttpResponse(body, content_type="text/html")
+    """Serve the built Next.js export for catch-all (SPA) routes.
+
+    Maps the request path to the matching static file produced by
+    ``next build`` (``output: "export"`` with ``trailingSlash``), e.g.
+    ``/login/`` -> ``out/login/index.html``. Unknown paths fall back to the
+    root ``index.html`` so client-side routing keeps working.
+    """
+    root = Path(settings.WHITENOISE_ROOT).resolve()
+    root_index = root / "index.html"
+
+    candidates = []
+    request_path = request.path.strip("/")
+    if request_path:
+        relative = Path(request_path)
+        if ".." not in relative.parts:
+            candidates.append(root / request_path / "index.html")
+            candidates.append(root / f"{request_path}.html")
+    candidates.append(root_index)
+
+    for candidate in candidates:
+        try:
+            resolved = candidate.resolve()
+            resolved.relative_to(root)
+        except (ValueError, OSError):
+            continue
+        if resolved.is_file():
+            return HttpResponse(resolved.read_bytes(), content_type="text/html")
+
+    return HttpResponseNotFound(
+        "Frontend build not found. Run `cd frontend && npm run build` first."
+    )
 
 
 class HealthView(APIView):
