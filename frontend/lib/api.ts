@@ -1,5 +1,4 @@
-export const API_URL =
-  process.env.NEXT_PUBLIC_API_URL ?? "https://fintfood-backend.onrender.com";
+export const API_URL = process.env.NEXT_PUBLIC_API_URL ?? "/api/v1";
 
 export type RecipeSummary = {
   id: number;
@@ -33,8 +32,7 @@ export async function getRecipes(
   page = 1,
   timeoutMs = REQUEST_TIMEOUT_MS,
 ): Promise<RecipesPage> {
-  const res = await fetch(`${API_URL}/api/v1/recipes/?page=${page}`, {
-    next: { revalidate: 30 },
+  const res = await fetch(`${API_URL}/recipes/?page=${page}`, {
     signal: AbortSignal.timeout(timeoutMs),
   });
   if (!res.ok) {

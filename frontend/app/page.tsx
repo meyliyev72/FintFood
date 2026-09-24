@@ -1,8 +1,13 @@
+"use client";
+
 import Image from "next/image";
 import Link from "next/link";
-import { getRecipes, type RecipeSummary } from "@/lib/api";
-
-export const dynamic = "force-dynamic";
+import { useEffect, useState } from "react";
+import {
+  getRecipes,
+  type RecipeSummary,
+  type RecipesPage,
+} from "@/lib/api";
 
 function RecipeCard({ recipe }: { recipe: RecipeSummary }) {
   return (
@@ -54,16 +59,27 @@ function RecipeCard({ recipe }: { recipe: RecipeSummary }) {
   );
 }
 
-export default async function Home() {
-  let data;
-  let error: string | null = null;
+const LOADING_MESSAGE = "Loading recipes…";
+const ERROR_MESSAGE =
+  "The recipe catalog is temporarily unavailable. Please try again shortly.";
 
-  try {
-    data = await getRecipes(1);
-  } catch {
-    error =
-      "The recipe catalog is temporarily unavailable. Please try again shortly.";
-  }
+export default function Home() {
+  const [data, setData] = useState<RecipesPage | null>(null);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    let cancelled = false;
+    getRecipes(1)
+      .then((page) => {
+        if (!cancelled) setData(page);
+      })
+      .catch(() => {
+        if (!cancelled) setError(ERROR_MESSAGE);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   return (
     <>
@@ -83,9 +99,7 @@ export default async function Home() {
               How it works
             </a>
             <a
-              href="https://fintfood-backend.onrender.com/api/v1/docs/"
-              target="_blank"
-              rel="noopener noreferrer"
+              href="/api/v1/docs/"
               className="hover:text-zinc-900 dark:hover:text-white"
             >
               API docs
@@ -187,29 +201,29 @@ export default async function Home() {
               <p className="mt-2 text-sm text-amber-700 dark:text-amber-300">
                 The API at{" "}
                 <code className="rounded bg-amber-100 px-1.5 py-0.5 font-mono text-xs dark:bg-amber-900">
-                  https://fintfood-backend.onrender.com
+                  {process.env.NEXT_PUBLIC_API_URL ?? "/api/v1"}
                 </code>{" "}
                 is not responding right now.
               </p>
             </div>
-          ) : !data ? null : (
-            <>
-              {data.results.length === 0 ? (
-                <div className="mt-8 rounded-2xl border border-zinc-200 bg-white p-12 text-center text-zinc-500 dark:border-zinc-800 dark:bg-zinc-900">
-                  No recipes yet. Run{" "}
-                  <code className="rounded bg-zinc-100 px-1.5 py-0.5 font-mono text-xs dark:bg-zinc-800">
-                    python manage.py seed_data
-                  </code>{" "}
-                  on the backend to add demo content.
-                </div>
-              ) : (
-                <div className="mt-8 grid gap-6 sm:grid-cols-2 xl:grid-cols-3">
-                  {data.results.map((recipe) => (
-                    <RecipeCard key={recipe.id} recipe={recipe} />
-                  ))}
-                </div>
-              )}
-            </>
+          ) : !data ? (
+            <div className="mt-8 rounded-2xl border border-zinc-200 bg-white p-12 text-center text-zinc-500 dark:border-zinc-800 dark:bg-zinc-900">
+              {LOADING_MESSAGE}
+            </div>
+          ) : data.results.length === 0 ? (
+            <div className="mt-8 rounded-2xl border border-zinc-200 bg-white p-12 text-center text-zinc-500 dark:border-zinc-800 dark:bg-zinc-900">
+              No recipes yet. Run{" "}
+              <code className="rounded bg-zinc-100 px-1.5 py-0.5 font-mono text-xs dark:bg-zinc-800">
+                python manage.py seed_data
+              </code>{" "}
+              on the backend to add demo content.
+            </div>
+          ) : (
+            <div className="mt-8 grid gap-6 sm:grid-cols-2 xl:grid-cols-3">
+              {data.results.map((recipe) => (
+                <RecipeCard key={recipe.id} recipe={recipe} />
+              ))}
+            </div>
           )}
         </section>
       </main>
