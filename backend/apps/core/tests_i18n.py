@@ -4,12 +4,16 @@ Category, ingredient-category and ingredient labels appear in navigation and
 filter controls, so the API must resolve them per request language.
 """
 
+from django.contrib.auth import get_user_model
 from django.test import TestCase
 from rest_framework.test import APIClient
 
 from apps.categories.models import Category
-from apps.core.i18n import localized, normalize_language
+from apps.core.i18n import localized, localized_choice, normalize_language
 from apps.ingredients.models import Ingredient, IngredientCategory
+from apps.recipes.models import Difficulty, Recipe, RecipeIngredient, RecipeStatus
+
+User = get_user_model()
 
 
 class NormalizeLanguageTests(TestCase):
@@ -107,3 +111,95 @@ class CatalogLanguageAPITests(TestCase):
         response = self.client.get("/api/v1/ingredients/categories/?lang=ru")
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.data[0]["name"], "Овощи")
+
+
+class LocalizedChoiceTests(TestCase):
+    """Enum labels must honour ?lang= too.
+
+    get_difficulty_display() / get_unit_display() rely on Django's own active
+    translation, but LocaleMiddleware is not installed, so they would always
+    return the hardcoded English label and ignore the requested language.
+    """
+
+    def test_difficulty_labels(self):
+        self.assertEqual(localized_choice("difficulty", "easy", "uz"), "Oson")
+        self.assertEqual(localized_choice("difficulty", "easy", "ru"), "Лёгкая")
+        self.assertEqual(localized_choice("difficulty", "easy", "en"), "Easy")
+        self.assertEqual(localized_choice("difficulty", "hard", "ru"), "Сложная")
+        self.assertEqual(localized_choice("difficulty", "medium", "uz"), "Oʻrta")
+
+    def test_unit_labels(self):
+        self.assertEqual(localized_choice("unit", "pcs", "uz"), "dona")
+        self.assertEqual(localized_choice("unit", "pcs", "ru"), "шт")
+        self.assertEqual(localized_choice("unit", "tbsp", "ru"), "ст. л.")
+
+    def test_recipe_status_labels(self):
+        self.assertEqual(localized_choice("status", "published", "uz"), "Nashr etilgan")
+        self.assertEqual(localized_choice("status", "pending", "ru"), "На проверке")
+
+    def test_unknown_values_fall_back_to_the_raw_value(self):
+        self.assertEqual(localized_choice("difficulty", "nope", "ru"), "nope")
+        self.assertEqual(localized_choice("difficulty", None, "ru"), "")
+        self.assertEqual(localized_choice("no_such_table", "x", "ru"), "x")
+
+
+class EnumLabelApiTests(TestCase):
+    """The API must return localized enum labels in list and detail payloads."""
+
+    @classmethod
+    def setUpTestData(cls):
+        cls.user = User.objects.create_user(
+            email="enums@example.com",
+            password="Str0ngPassw0rd!",
+            name="Enum Tester",
+        )
+        cls.category = Category.objects.create(
+            name="Breakfast",
+            slug="breakfast",
+            name_uz="Nonushta",
+            name_ru="Завтрак",
+            name_en="Breakfast",
+        )
+        cls.recipe = Recipe.objects.create(
+            title="Test dish",
+            description="A dish used for enum label tests.",
+            author=cls.user,
+            category=cls.category,
+            difficulty=Difficulty.EASY,
+            status=RecipeStatus.PUBLISHED,
+            prep_time=5,
+            cooking_time=10,
+            servings=2,
+        )
+        ingredient = Ingredient.objects.first()
+        if ingredient is None:
+            ingredient_category = IngredientCategory.objects.create(
+                slug="test", name="Test", name_uz="Test", name_ru="Тест", name_en="Test"
+            )
+            ingredient = Ingredient.objects.create(
+                name="Salt",
+                slug="salt",
+                category=ingredient_category,
+                name_uz="Tuz",
+                name_ru="Соль",
+                name_en="Salt",
+            )
+        RecipeIngredient.objects.create(
+            recipe=cls.recipe, ingredient=ingredient, quantity=1, unit="pcs"
+        )
+
+    def test_recipe_list_difficulty_is_localized(self):
+        expected = {"uz": "Oson", "ru": "Лёгкая", "en": "Easy"}
+        for lang, label in expected.items():
+            response = self.client.get(f"/api/v1/recipes/?lang={lang}")
+            self.assertEqual(response.status_code, 200)
+            self.assertEqual(response.data["results"][0]["difficulty"], label)
+
+    def test_recipe_detail_unit_is_localized(self):
+        response = self.client.get(f"/api/v1/recipes/{self.recipe.slug}/?lang=ru")
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.data["ingredients"][0]["unit"], "шт")
+
+    def test_recipe_list_defaults_to_uz(self):
+        response = self.client.get("/api/v1/recipes/")
+        self.assertEqual(response.data["results"][0]["difficulty"], "Oson")

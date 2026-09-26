@@ -7,7 +7,7 @@ from rest_framework import serializers
 
 from apps.accounts.serializers import UserSerializer
 from apps.categories.serializers import CategorySerializer
-from apps.core.i18n import get_request_language, localized
+from apps.core.i18n import get_request_language, localized, localized_choice
 from apps.ingredients.models import Ingredient
 from apps.reviews.serializers import ReviewSerializer
 
@@ -36,21 +36,28 @@ class RecipeIngredientSerializer(serializers.ModelSerializer):
     name = serializers.SerializerMethodField()
     slug = serializers.SlugField(source="ingredient.slug", read_only=True)
     category = serializers.SerializerMethodField()
+    unit = serializers.SerializerMethodField()
 
     class Meta:
         model = RecipeIngredient
         fields = ["id", "name", "slug", "category", "quantity", "unit"]
 
+    def _language(self):
+        return get_request_language(self.context.get("request"))
+
     def get_name(self, obj) -> str:
         # User-authored recipes keep their own text; only the catalog ingredient
         # name is translated (§3.3).
-        return localized(obj.ingredient, "name", get_request_language(self.context.get("request")))
+        return localized(obj.ingredient, "name", self._language())
 
     def get_category(self, obj):
         category = obj.ingredient.category
         if not category:
             return None
-        return localized(category, "name", get_request_language(self.context.get("request")))
+        return localized(category, "name", self._language())
+
+    def get_unit(self, obj) -> str:
+        return localized_choice("unit", obj.unit, self._language())
 
 
 class InstructionStepSerializer(serializers.ModelSerializer):
@@ -101,7 +108,7 @@ class RecipeListSerializer(serializers.ModelSerializer):
     is_favorite = serializers.SerializerMethodField()
     ingredients_count = serializers.IntegerField(read_only=True)
     total_time = serializers.IntegerField(read_only=True)
-    difficulty = serializers.CharField(source="get_difficulty_display", read_only=True)
+    difficulty = serializers.SerializerMethodField()
 
     class Meta:
         model = Recipe
@@ -127,6 +134,12 @@ class RecipeListSerializer(serializers.ModelSerializer):
 
     def get_image(self, obj):
         return cover_image_url(obj, self.context.get("request"))
+
+    def get_difficulty(self, obj) -> str:
+        """Enum label follows ?lang=, unlike get_difficulty_display()."""
+        return localized_choice(
+            "difficulty", obj.difficulty, get_request_language(self.context.get("request"))
+        )
 
     def get_average_rating(self, obj):
         return round_half_up(obj.avg_rating)
@@ -367,7 +380,7 @@ class ReportSerializer(serializers.ModelSerializer):
 
     content_type = serializers.ChoiceField(choices=Content.choices, write_only=True)
     object_id = serializers.IntegerField(write_only=True)
-    status = serializers.CharField(source="get_status_display", read_only=True)
+    status = serializers.SerializerMethodField()
     reported_by = serializers.SerializerMethodField()
 
     class Meta:
@@ -389,6 +402,11 @@ class ReportSerializer(serializers.ModelSerializer):
             "id": obj.reported_by_id,
             "name": obj.reported_by.display_name,
         }
+
+    def get_status(self, obj) -> str:
+        return localized_choice(
+            "status", obj.status, get_request_language(self.context.get("request"))
+        )
 
     def create(self, validated_data):
         content_type_name = validated_data.pop("content_type")

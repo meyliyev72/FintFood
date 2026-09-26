@@ -74,3 +74,54 @@ def localized(instance, field: str = "name", language: str = DEFAULT_LANGUAGE) -
     if english:
         return english
     return getattr(instance, field, "") or ""
+
+
+# ---------------------------------------------------------------------------
+# Enum display labels
+# ---------------------------------------------------------------------------
+# ``get_FOO_display()`` relies on Django's active translation, but
+# LocaleMiddleware is not installed and no ``locale/`` catalogs exist, so it
+# would always return the hardcoded English label from the TextChoices tuple
+# and ignore ``?lang=``. These tables keep enum labels (difficulty, unit,
+# recipe status) in the same resolution order as catalog fields.
+
+DIFFICULTY_LABELS = {
+    "easy": {"uz": "Oson", "ru": "Лёгкая", "en": "Easy"},
+    "medium": {"uz": "Oʻrta", "ru": "Средняя", "en": "Medium"},
+    "hard": {"uz": "Qiyin", "ru": "Сложная", "en": "Hard"},
+}
+
+UNIT_LABELS = {
+    "g": {"uz": "g", "ru": "г", "en": "g"},
+    "kg": {"uz": "kg", "ru": "кг", "en": "kg"},
+    "ml": {"uz": "ml", "ru": "мл", "en": "ml"},
+    "l": {"uz": "l", "ru": "л", "en": "l"},
+    "pcs": {"uz": "dona", "ru": "шт", "en": "pcs"},
+    "tbsp": {"uz": "stol qoshiq", "ru": "ст. л.", "en": "tbsp"},
+    "tsp": {"uz": "choy qoshiq", "ru": "ч. л.", "en": "tsp"},
+}
+
+RECIPE_STATUS_LABELS = {
+    "draft": {"uz": "Qoralama", "ru": "Черновик", "en": "Draft"},
+    "pending": {"uz": "Tekshiruvda", "ru": "На проверке", "en": "Pending review"},
+    "published": {"uz": "Nashr etilgan", "ru": "Опубликовано", "en": "Published"},
+    "rejected": {"uz": "Rad etilgan", "ru": "Отклонено", "en": "Rejected"},
+}
+
+_ENUM_TABLES = {
+    "difficulty": DIFFICULTY_LABELS,
+    "unit": UNIT_LABELS,
+    "status": RECIPE_STATUS_LABELS,
+}
+
+
+def localized_choice(
+    table: str, value: str | None, language: str = DEFAULT_LANGUAGE
+) -> str:
+    """Translate an enum value, falling back to the stored English label."""
+    if not value:
+        return ""
+    labels = _ENUM_TABLES.get(table, {}).get(str(value))
+    if not labels:
+        return str(value)
+    return labels.get(language) or labels.get("en") or str(value)

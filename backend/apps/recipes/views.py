@@ -12,7 +12,7 @@ from rest_framework.permissions import (
 )
 from rest_framework.response import Response
 
-from apps.core.i18n import get_request_language, localized
+from apps.core.i18n import get_request_language, localized, localized_choice
 from apps.ingredients.models import Ingredient
 from apps.reviews.models import Review
 
@@ -220,7 +220,7 @@ class RecipeViewSet(
                     "id": ri.ingredient_id,
                     "name": localized(ri.ingredient, "name", language),
                     "quantity": ri.display_quantity,
-                    "unit": ri.get_unit_display(),
+                    "unit": localized_choice("unit", ri.unit, language),
                 }
                 for ri in missing_items
             ]

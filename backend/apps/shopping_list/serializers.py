@@ -2,7 +2,7 @@ from decimal import Decimal
 
 from rest_framework import serializers
 
-from apps.core.i18n import get_request_language, localized
+from apps.core.i18n import get_request_language, localized_choice
 
 from .models import ShoppingListItem
 from .services import merge_item
@@ -13,6 +13,7 @@ class ShoppingListItemSerializer(serializers.ModelSerializer):
     quantity = serializers.DecimalField(
         max_digits=8, decimal_places=2, min_value=Decimal("0.01")
     )
+    unit = serializers.SerializerMethodField()
 
     class Meta:
         model = ShoppingListItem
@@ -28,9 +29,14 @@ class ShoppingListItemSerializer(serializers.ModelSerializer):
         ]
         read_only_fields = ["id", "category", "created_at"]
 
+    def get_unit(self, obj) -> str:
+        return localized_choice("unit", obj.unit, self._language())
+
+    def _language(self) -> str:
+        return get_request_language(self.context.get("request"))
+
     def get_category(self, obj) -> str:
-        language = get_request_language(self.context.get("request"))
-        return obj.category_name_for(language)
+        return obj.category_name_for(self._language())
 
     def validate_name(self, value):
         if not (value or "").strip():
