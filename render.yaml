@@ -1,9 +1,16 @@
-# FintFood — Render blueprint (single-service deployment)
-# Rend backenda faqat bitta web service bor: Django backend
-# o'zi build qilingan Next.js frontend'ni ham serve qiladi
-# (WHITENOISE_ROOT -> frontend/out), alohida frontend service kerak emas.
-# Render dashboard: New -> Blueprint -> bu repo'ni tanlang.
-# Qo'lma yo'riqnoma: https://render.com/docs/blueprint-spec
+# FintFood — Render blueprint
+#
+# Two web services plus one managed PostgreSQL:
+#   fintfood-backend  Django + DRF REST API (gunicorn)
+#   fintfood-frontend Next.js SSR/ISR UI (next start)
+#
+# The frontend talks to the backend over the internal Render network using
+# API_URL (server-side) and NEXT_PUBLIC_API_URL (browser + RSC fetch).
+# Uploaded media lives on a Render Disk mounted at /var/fintfood-media so
+# images survive redeploys. For a stateless setup set DJANGO_S3_MEDIA=true and
+# supply the AWS_* vars instead of attaching the disk.
+#
+# Docs: https://render.com/docs/blueprint-spec
 
 databases:
   - name: fintfood-db
@@ -13,30 +20,39 @@ databases:
     user: fintfood
 
 services:
+  # ---------------------------------------------------------------------------
+  # Django REST API
+  # ---------------------------------------------------------------------------
   - type: web
     name: fintfood-backend
     runtime: python
     rootDir: backend
     region: frankfurt
     plan: free
-    healthCheckPath: /api/v1/schema/
-    buildCommand: cd ../frontend && npm ci && npm run build && cd ../backend && pip install --upgrade pip && pip install -r requirements.txt
-    startCommand: python manage.py migrate --noinput && python manage.py collectstatic --noinput && gunicorn config.wsgi:application --bind 0.0.0.0:$PORT --workers 2 --timeout 60
+    healthCheckPath: /api/v1/health/
+    buildCommand: pip install --upgrade pip && pip install -r requirements.txt
+    startCommand: >-
+      python manage.py migrate --noinput
+      && python manage.py collectstatic --noinput
+      && gunicorn config.wsgi:application
+      --bind 0.0.0.0:$PORT --workers 2 --timeout 60
+    disk:
+      name: fintfood-media
+      mountPath: /var/fintfood-media
+      sizeGB: 1
     envVars:
       - key: DJANGO_SETTINGS_MODULE
         value: config.settings.production
       - key: DJANGO_DEBUG
         value: "false"
-      - key: DJANGO_ALLOWED_HOSTS
-        value: fintfood-backend.onrender.com
-      - key: DATABASE_SSLMODE
-        value: require
       - key: DJANGO_SECRET_KEY
         generateValue: true
-      - key: JWT_SECURE_COOKIES
+      - key: DJANGO_ALLOWED_HOSTS
+        value: fintfood-backend.onrender.com
+      - key: DJANGO_SECURE_SSL_REDIRECT
         value: "true"
-      - key: EMAIL_BACKEND
-        value: django.core.mail.backends.console.EmailBackend
+      - key: DATABASE_SSLMODE
+        value: require
       - key: DATABASE_NAME
         fromDatabase:
           name: fintfood-db
@@ -57,9 +73,50 @@ services:
         fromDatabase:
           name: fintfood-db
           property: port
+      - key: MEDIA_ROOT
+        value: /var/fintfood-media
+      - key: JWT_SECURE_COOKIES
+        value: "true"
+      # Browser-originated requests come from the Next.js service.
       - key: CORS_ALLOWED_ORIGINS
-        value: https://fintfood-backend.onrender.com
+        value: https://fintfood-frontend.onrender.com
       - key: CSRF_TRUSTED_ORIGINS
-        value: https://fintfood-backend.onrender.com
+        value: https://fintfood-frontend.onrender.com
       - key: FRONTEND_URL
-        value: https://fintfood-backend.onrender.com
+        value: https://fintfood-frontend.onrender.com
+      - key: EMAIL_BACKEND
+        value: django.core.mail.backends.console.EmailBackend
+
+  # ---------------------------------------------------------------------------
+  # Next.js UI
+  # ---------------------------------------------------------------------------
+  - type: web
+    name: fintfood-frontend
+    runtime: node
+    rootDir: frontend
+    region: frankfurt
+    plan: free
+    healthCheckPath: /uz
+    buildCommand: npm ci && npm run build
+    startCommand: npm run start
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: NEXT_TELEMETRY_DISABLED
+        value: "1"
+      # Server-side API URL (Render internal network, no TLS termination).
+      - key: API_URL
+        fromService:
+          name: fintfood-backend
+          type: web
+          envVarKey: RENDER_EXTERNAL_URL
+      # URL used by the browser and by RSC fetches.
+      - key: NEXT_PUBLIC_API_URL
+        fromService:
+          name: fintfood-backend
+          type: web
+          envVarKey: RENDER_EXTERNAL_URL
+      - key: NEXT_PUBLIC_MEDIA_HOST
+        value: fintfood-backend.onrender.com
+      - key: NEXT_PUBLIC_SITE_URL
+        value: https://fintfood-frontend.onrender.com

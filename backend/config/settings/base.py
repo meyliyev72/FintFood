@@ -147,11 +147,9 @@ STATICFILES_STORAGE = "whitenoise.storage.CompressedManifestStaticFilesStorage"
 MEDIA_URL = "media/"
 MEDIA_ROOT = BASE_DIR / "media"
 
-# Built Next.js export (static site) served by WhiteNoise from the site root.
-FRONTEND_DIST_DIR = os.environ.get(
-    "FRONTEND_DIST_DIR", str(BASE_DIR.parent / "frontend" / "out")
-)
-WHITENOISE_ROOT = FRONTEND_DIST_DIR
+# WhiteNoise serves Django's own collected static files (admin assets, DRF
+# styles). The customer-facing UI is a separate Next.js service.
+WHITENOISE_ROOT = None
 
 FILE_UPLOAD_MAX_MEMORY_SIZE = 5 * 1024 * 1024
 DATA_UPLOAD_MAX_MEMORY_SIZE = 10 * 1024 * 1024

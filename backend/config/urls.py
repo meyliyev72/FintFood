@@ -3,14 +3,13 @@
 from django.conf import settings
 from django.conf.urls.static import static
 from django.contrib import admin
-from django.urls import include, path, re_path
+from django.http import JsonResponse
+from django.urls import include, path
 
 from drf_spectacular.views import (
     SpectacularAPIView,
     SpectacularSwaggerView,
 )
-
-from apps.core.views import frontend_index
 
 urlpatterns = [
     path("admin/", admin.site.urls),
@@ -21,15 +20,22 @@ urlpatterns = [
         SpectacularSwaggerView.as_view(url_name="schema"),
         name="schema-ui",
     ),
-    # SPA catch-all: anything that is not an API/admin/static/media/next-asset
-    # path gets the built frontend index.html (deep links work via
-    # client-side routing). Missing _next assets return Django's 404 instead.
-    re_path(
-        r"^(?!admin/|api/|static/|media/|_next/).*",
-        frontend_index,
-        name="frontend-index",
-    ),
 ]
+
+
+def root(request):
+    """The backend is an API-only service; the UI is served by Next.js."""
+    return JsonResponse(
+        {
+            "service": "fintfood-api",
+            "version": "v1",
+            "api": "/api/v1/",
+            "docs": "/api/v1/docs/",
+        }
+    )
+
+
+urlpatterns += [path("", root, name="root")]
 
 if settings.DEBUG:
     urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
