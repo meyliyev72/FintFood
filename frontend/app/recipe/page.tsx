@@ -13,12 +13,16 @@ import {
 import { useAuth } from "@/lib/auth";
 import { FavoriteButton } from "@/components/favorite-button";
 import { ReviewSection } from "@/components/review-section";
+import { Alert, Badge, Button, LoadingState, Stars } from "@/components/ui";
 import {
-  Alert,
-  Button,
-  LoadingState,
-  Stars,
-} from "@/components/ui";
+  IconArrowRight,
+  IconBasket,
+  IconChef,
+  IconClock,
+  IconFlame,
+  IconLeaf,
+  IconUsers,
+} from "@/components/icons";
 
 function RecipeInner() {
   const searchParams = useSearchParams();
@@ -106,17 +110,29 @@ function RecipeInner() {
     recipe.fat && `${recipe.fat} g fat`,
   ].filter(Boolean) as string[];
 
-  return (
-    <article className="mx-auto w-full max-w-5xl px-4 py-10 sm:px-6">
-      <Link
-        href="/recipes"
-        className="text-sm font-medium text-emerald-700 hover:text-emerald-800 dark:text-emerald-400"
-      >
-        ← Back to recipes
-      </Link>
+  const stats = [
+    { label: "Prep", value: `${recipe.prep_time} min`, icon: <IconClock width={16} height={16} /> },
+    { label: "Cook", value: `${recipe.cooking_time} min`, icon: <IconFlame width={16} height={16} /> },
+    { label: "Total", value: `${recipe.total_time} min`, icon: <IconChef width={16} height={16} /> },
+    { label: "Servings", value: String(recipe.servings), icon: <IconUsers width={16} height={16} /> },
+  ];
 
-      <div className="mt-4 grid gap-8 lg:grid-cols-2">
-        <div className="relative aspect-[4/3] w-full overflow-hidden rounded-2xl bg-zinc-100 dark:bg-zinc-800">
+  return (
+    <article className="mx-auto w-full max-w-6xl px-4 py-8 sm:px-6">
+      <nav className="flex items-center gap-1.5 text-sm text-zinc-500 dark:text-zinc-400">
+        <Link href="/" className="hover:text-emerald-700 dark:hover:text-emerald-400">
+          Home
+        </Link>
+        <span>/</span>
+        <Link href="/recipes" className="hover:text-emerald-700 dark:hover:text-emerald-400">
+          Recipes
+        </Link>
+        <span>/</span>
+        <span className="truncate text-zinc-700 dark:text-zinc-300">{recipe.title}</span>
+      </nav>
+
+      <div className="mt-5 grid gap-8 lg:grid-cols-2">
+        <div className="relative aspect-[4/3] w-full overflow-hidden rounded-3xl bg-zinc-100 shadow-sm dark:bg-zinc-800">
           {recipe.image ? (
             <Image
               src={recipe.image}
@@ -128,35 +144,32 @@ function RecipeInner() {
             />
           ) : (
             <div className="flex h-full w-full items-center justify-center bg-gradient-to-br from-emerald-100 to-teal-200 dark:from-emerald-900 dark:to-teal-900">
-              <span className="text-sm font-semibold uppercase tracking-wider text-emerald-800 dark:text-emerald-200">
-                FintFood
-              </span>
+              <IconLeaf width={44} height={44} className="text-emerald-600/70" />
             </div>
           )}
         </div>
 
         <div>
-          <div className="flex flex-wrap items-center gap-3">
-            {recipe.category && (
-              <span className="rounded-full bg-emerald-50 px-3 py-1 text-xs font-medium text-emerald-700 dark:bg-emerald-950 dark:text-emerald-300">
-                {recipe.category.name}
-              </span>
-            )}
-            <span className="rounded-full bg-zinc-100 px-3 py-1 text-xs font-medium text-zinc-700 dark:bg-zinc-800 dark:text-zinc-200">
+          <div className="flex flex-wrap items-center gap-2">
+            {recipe.category && <Badge tone="emerald">{recipe.category.name}</Badge>}
+            <Badge tone="zinc" className="capitalize">
               {recipe.difficulty}
-            </span>
+            </Badge>
           </div>
 
           <h1 className="mt-4 text-3xl font-bold tracking-tight sm:text-4xl">
             {recipe.title}
           </h1>
 
-          <div className="mt-2 flex items-center gap-2 text-sm text-zinc-500 dark:text-zinc-400">
+          <div className="mt-3 flex items-center gap-2 text-sm text-zinc-500 dark:text-zinc-400">
             {recipe.average_rating !== null ? (
               <>
                 <Stars rating={Number(recipe.average_rating)} />
+                <span className="font-medium text-zinc-700 dark:text-zinc-300">
+                  {Number(recipe.average_rating).toFixed(1)}
+                </span>
                 <span>
-                  {Number(recipe.average_rating).toFixed(1)} ({recipe.review_count}{" "}
+                  ({recipe.review_count}{" "}
                   {recipe.review_count === 1 ? "review" : "reviews"})
                 </span>
               </>
@@ -171,32 +184,32 @@ function RecipeInner() {
             </p>
           )}
 
-          <dl className="mt-6 grid grid-cols-2 gap-4 sm:grid-cols-4">
-            <div className="rounded-xl border border-zinc-200 bg-white p-3 text-center dark:border-zinc-800 dark:bg-zinc-900">
-              <dt className="text-xs text-zinc-500 dark:text-zinc-400">Prep</dt>
-              <dd className="mt-1 font-semibold">{recipe.prep_time} min</dd>
-            </div>
-            <div className="rounded-xl border border-zinc-200 bg-white p-3 text-center dark:border-zinc-800 dark:bg-zinc-900">
-              <dt className="text-xs text-zinc-500 dark:text-zinc-400">Cook</dt>
-              <dd className="mt-1 font-semibold">{recipe.cooking_time} min</dd>
-            </div>
-            <div className="rounded-xl border border-zinc-200 bg-white p-3 text-center dark:border-zinc-800 dark:bg-zinc-900">
-              <dt className="text-xs text-zinc-500 dark:text-zinc-400">Total</dt>
-              <dd className="mt-1 font-semibold">{recipe.total_time} min</dd>
-            </div>
-            <div className="rounded-xl border border-zinc-200 bg-white p-3 text-center dark:border-zinc-800 dark:bg-zinc-900">
-              <dt className="text-xs text-zinc-500 dark:text-zinc-400">Servings</dt>
-              <dd className="mt-1 font-semibold">{recipe.servings}</dd>
-            </div>
+          <dl className="mt-6 grid grid-cols-2 gap-3 sm:grid-cols-4">
+            {stats.map((stat) => (
+              <div
+                key={stat.label}
+                className="rounded-2xl border border-zinc-200/80 bg-white p-3 text-center shadow-sm dark:border-zinc-800 dark:bg-zinc-900"
+              >
+                <dt className="flex items-center justify-center gap-1 text-xs text-zinc-500 dark:text-zinc-400">
+                  {stat.icon}
+                  {stat.label}
+                </dt>
+                <dd className="mt-1 text-sm font-bold">{stat.value}</dd>
+              </div>
+            ))}
           </dl>
 
           <p className="mt-4 text-sm text-zinc-500 dark:text-zinc-400">
-            By {recipe.author.display_name}
+            By{" "}
+            <span className="font-medium text-zinc-700 dark:text-zinc-300">
+              {recipe.author.display_name}
+            </span>
           </p>
 
           <div className="mt-6 flex flex-wrap items-start gap-3">
             <FavoriteButton recipeId={recipe.id} initial={recipe.is_favorite} />
             <Button onClick={handleAddToList} disabled={addingToList}>
+              <IconBasket width={18} height={18} />
               {addingToList ? "Adding…" : "Add to shopping list"}
             </Button>
           </div>
@@ -219,46 +232,48 @@ function RecipeInner() {
           <h2 className="text-xl font-bold tracking-tight">Nutrition</h2>
           <div className="mt-3 flex flex-wrap gap-2">
             {nutrition.map((item) => (
-              <span
-                key={item}
-                className="rounded-full border border-zinc-200 bg-white px-3 py-1 text-sm text-zinc-700 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-200"
-              >
+              <Badge key={item} tone="zinc" className="px-3.5 py-1.5 text-sm">
                 {item}
-              </span>
+              </Badge>
             ))}
           </div>
         </section>
       )}
 
-      <div className="mt-10 grid gap-10 lg:grid-cols-2">
-        <section>
-          <h2 className="text-xl font-bold tracking-tight">Ingredients</h2>
-          <ul className="mt-4 space-y-2">
-            {recipe.ingredients.map((ingredient) => (
-              <li
-                key={ingredient.id}
-                className="flex items-center justify-between gap-3 border-b border-zinc-100 pb-2 text-sm dark:border-zinc-800"
-              >
-                <span className="text-zinc-800 dark:text-zinc-200">
-                  {ingredient.name}
-                </span>
-                <span className="shrink-0 text-zinc-500 dark:text-zinc-400">
-                  {ingredient.quantity} {ingredient.unit}
-                </span>
-              </li>
-            ))}
-          </ul>
+      <div className="mt-10 grid gap-8 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.4fr)]">
+        <section className="lg:sticky lg:top-24 lg:self-start">
+          <div className="rounded-2xl border border-zinc-200/80 bg-white p-6 shadow-sm dark:border-zinc-800 dark:bg-zinc-900">
+            <h2 className="flex items-center gap-2 text-xl font-bold tracking-tight">
+              <IconLeaf width={20} height={20} className="text-emerald-600" />
+              Ingredients
+            </h2>
+            <ul className="mt-4 space-y-1">
+              {recipe.ingredients.map((ingredient) => (
+                <li
+                  key={ingredient.id}
+                  className="flex items-center justify-between gap-3 border-b border-zinc-100 py-2.5 text-sm last:border-0 dark:border-zinc-800"
+                >
+                  <span className="text-zinc-800 dark:text-zinc-200">
+                    {ingredient.name}
+                  </span>
+                  <span className="shrink-0 font-medium text-zinc-500 dark:text-zinc-400">
+                    {ingredient.quantity} {ingredient.unit}
+                  </span>
+                </li>
+              ))}
+            </ul>
+          </div>
         </section>
 
         <section>
           <h2 className="text-xl font-bold tracking-tight">Instructions</h2>
-          <ol className="mt-4 space-y-4">
+          <ol className="mt-4 space-y-5">
             {recipe.steps.map((step) => (
               <li key={step.step_number} className="flex gap-4">
-                <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-emerald-100 text-sm font-semibold text-emerald-700 dark:bg-emerald-900 dark:text-emerald-200">
+                <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-emerald-500 to-teal-600 text-sm font-bold text-white shadow-sm">
                   {step.step_number}
                 </span>
-                <p className="text-sm leading-6 text-zinc-700 dark:text-zinc-300">
+                <p className="pt-1 text-sm leading-7 text-zinc-700 dark:text-zinc-300">
                   {step.instruction}
                 </p>
               </li>
@@ -275,7 +290,7 @@ function RecipeInner() {
               image.url ? (
                 <div
                   key={image.id}
-                  className="relative aspect-square overflow-hidden rounded-xl bg-zinc-100 dark:bg-zinc-800"
+                  className="relative aspect-square overflow-hidden rounded-2xl bg-zinc-100 dark:bg-zinc-800"
                 >
                   <Image
                     src={image.url}
@@ -292,6 +307,16 @@ function RecipeInner() {
       )}
 
       <ReviewSection recipeId={recipe.id} initialReviews={recipe.reviews} />
+
+      <div className="mt-10">
+        <Link
+          href="/recipes"
+          className="inline-flex items-center gap-1.5 text-sm font-semibold text-emerald-700 hover:text-emerald-800 dark:text-emerald-400"
+        >
+          <IconArrowRight width={16} height={16} className="rotate-180" />
+          Back to all recipes
+        </Link>
+      </div>
     </article>
   );
 }

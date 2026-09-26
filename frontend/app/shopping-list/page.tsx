@@ -13,15 +13,16 @@ import {
 import { useAuth } from "@/lib/auth";
 import {
   Alert,
+  Badge,
   Button,
   ButtonLink,
   EmptyState,
   Field,
   Input,
   LoadingState,
-  PageHeader,
   Select,
 } from "@/components/ui";
+import { IconBasket, IconPlus, IconTrash } from "@/components/icons";
 
 const UNITS = ["pcs", "g", "kg", "ml", "l", "tbsp", "tsp", "cup", "clove", "bunch", "slice", "pack", "can"];
 
@@ -127,6 +128,7 @@ export default function ShoppingListPage() {
       <div className="mx-auto w-full max-w-3xl px-4 py-16 sm:px-6">
         <EmptyState
           title="Log in to use your shopping list"
+          icon={<IconBasket width={26} height={26} />}
           action={<ButtonLink href="/login">Log in</ButtonLink>}
         >
           Add ingredients from any recipe and keep track of what to buy.
@@ -140,21 +142,26 @@ export default function ShoppingListPage() {
 
   return (
     <div className="mx-auto w-full max-w-3xl px-4 py-10 sm:px-6">
-      <PageHeader
-        title="Shopping list"
-        subtitle={`${remaining} to buy · ${completed} done`}
-        action={
-          completed > 0 ? (
-            <Button variant="secondary" onClick={handleClearCompleted}>
-              Clear completed
-            </Button>
-          ) : undefined
-        }
-      />
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+        <div>
+          <h1 className="text-3xl font-bold tracking-tight sm:text-4xl">
+            Shopping list
+          </h1>
+          <div className="mt-2 flex gap-2">
+            <Badge tone="emerald">{remaining} to buy</Badge>
+            <Badge tone="zinc">{completed} done</Badge>
+          </div>
+        </div>
+        {completed > 0 && (
+          <Button variant="secondary" onClick={handleClearCompleted}>
+            Clear completed
+          </Button>
+        )}
+      </div>
 
       <form
         onSubmit={handleAdd}
-        className="mt-8 grid gap-3 rounded-2xl border border-zinc-200 bg-white p-4 dark:border-zinc-800 dark:bg-zinc-900 sm:grid-cols-[1fr_120px_120px_auto] sm:items-end"
+        className="mt-8 grid gap-3 rounded-2xl border border-zinc-200/80 bg-white p-4 shadow-sm dark:border-zinc-800 dark:bg-zinc-900 sm:grid-cols-[1fr_110px_110px_auto] sm:items-end"
       >
         <Field label="Item">
           <Input
@@ -181,7 +188,8 @@ export default function ShoppingListPage() {
             ))}
           </Select>
         </Field>
-        <Button type="submit" disabled={adding || !name.trim()}>
+        <Button type="submit" disabled={adding || !name.trim()} className="h-[42px]">
+          <IconPlus width={16} height={16} />
           {adding ? "Adding…" : "Add"}
         </Button>
       </form>
@@ -194,17 +202,23 @@ export default function ShoppingListPage() {
 
       <div className="mt-6">
         {items.length === 0 ? (
-          <EmptyState title="Your shopping list is empty">
+          <EmptyState
+            title="Your shopping list is empty"
+            icon={<IconBasket width={26} height={26} />}
+          >
             Add items above, or open a recipe and tap{" "}
             <strong>Add to shopping list</strong>.
           </EmptyState>
         ) : (
-          <ul className="divide-y divide-zinc-100 overflow-hidden rounded-2xl border border-zinc-200 bg-white dark:divide-zinc-800 dark:border-zinc-800 dark:bg-zinc-900">
+          <ul className="divide-y divide-zinc-100 overflow-hidden rounded-2xl border border-zinc-200/80 bg-white shadow-sm dark:divide-zinc-800 dark:border-zinc-800 dark:bg-zinc-900">
             {items.map((item) => (
-              <li key={item.id} className="flex items-center gap-3 px-4 py-3">
+              <li
+                key={item.id}
+                className="flex items-center gap-3 px-4 py-3 transition-colors hover:bg-zinc-50 dark:hover:bg-zinc-800/50"
+              >
                 <input
                   type="checkbox"
-                  className="h-4 w-4 rounded border-zinc-300 text-emerald-600 focus:ring-emerald-500"
+                  className="h-5 w-5 rounded border-zinc-300 text-emerald-600 focus:ring-emerald-500"
                   checked={item.is_completed}
                   onChange={() => toggleItem(item)}
                 />
@@ -213,7 +227,7 @@ export default function ShoppingListPage() {
                     className={
                       item.is_completed
                         ? "text-sm text-zinc-400 line-through"
-                        : "text-sm text-zinc-800 dark:text-zinc-200"
+                        : "text-sm font-medium text-zinc-800 dark:text-zinc-200"
                     }
                   >
                     {item.name}
@@ -228,10 +242,10 @@ export default function ShoppingListPage() {
                 <button
                   type="button"
                   onClick={() => removeItem(item)}
-                  className="text-sm text-zinc-400 hover:text-red-600 dark:hover:text-red-400"
+                  className="flex h-8 w-8 items-center justify-center rounded-lg text-zinc-400 transition-colors hover:bg-red-50 hover:text-red-600 dark:hover:bg-red-950 dark:hover:text-red-400"
                   aria-label={`Remove ${item.name}`}
                 >
-                  ✕
+                  <IconTrash width={16} height={16} />
                 </button>
               </li>
             ))}

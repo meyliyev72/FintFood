@@ -1,21 +1,24 @@
 import Link from "next/link";
 import type { ComponentProps, ReactNode } from "react";
 import { cn } from "@/lib/utils";
+import { IconStar } from "@/components/icons";
 
 export const buttonBase =
-  "inline-flex items-center justify-center gap-2 rounded-full font-semibold transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-60 dark:focus-visible:ring-offset-zinc-950";
+  "inline-flex items-center justify-center gap-2 rounded-xl font-semibold transition-all focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-60 active:scale-[.98] dark:focus-visible:ring-offset-zinc-950";
 
 export const buttonVariants = {
-  primary: "bg-emerald-600 text-white hover:bg-emerald-700",
+  primary:
+    "bg-emerald-600 text-white shadow-sm shadow-emerald-600/20 hover:bg-emerald-700 hover:shadow-md",
   secondary:
-    "border border-zinc-300 text-zinc-700 hover:bg-zinc-100 dark:border-zinc-700 dark:text-zinc-200 dark:hover:bg-zinc-800",
+    "border border-zinc-200 bg-white text-zinc-700 shadow-sm hover:border-zinc-300 hover:bg-zinc-50 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-200 dark:hover:bg-zinc-800",
   danger:
-    "border border-red-300 text-red-700 hover:bg-red-50 dark:border-red-900 dark:text-red-300 dark:hover:bg-red-950",
-  ghost: "text-zinc-600 hover:text-zinc-900 dark:text-zinc-300 dark:hover:text-white",
+    "border border-red-200 bg-white text-red-600 hover:bg-red-50 dark:border-red-900 dark:bg-zinc-900 dark:text-red-300 dark:hover:bg-red-950",
+  ghost:
+    "text-zinc-600 hover:bg-zinc-100 hover:text-zinc-900 dark:text-zinc-300 dark:hover:bg-zinc-800 dark:hover:text-white",
 };
 
 export const buttonSizes = {
-  sm: "px-3 py-1.5 text-sm",
+  sm: "px-3.5 py-2 text-sm",
   md: "px-5 py-2.5 text-sm",
   lg: "px-6 py-3 text-base",
 };
@@ -60,40 +63,19 @@ export function ButtonLink({
   );
 }
 
+const fieldBase =
+  "w-full rounded-xl border border-zinc-200 bg-white px-4 py-2.5 text-sm text-zinc-900 shadow-sm transition placeholder:text-zinc-400 focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-500/30 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-50";
+
 export function Input({ className, ...props }: ComponentProps<"input">) {
-  return (
-    <input
-      className={cn(
-        "w-full rounded-xl border border-zinc-300 bg-white px-4 py-2.5 text-sm text-zinc-900 placeholder:text-zinc-400 focus:border-emerald-500 focus:outline-none focus:ring-1 focus:ring-emerald-500 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-50",
-        className,
-      )}
-      {...props}
-    />
-  );
+  return <input className={cn(fieldBase, className)} {...props} />;
 }
 
 export function Textarea({ className, ...props }: ComponentProps<"textarea">) {
-  return (
-    <textarea
-      className={cn(
-        "w-full rounded-xl border border-zinc-300 bg-white px-4 py-2.5 text-sm text-zinc-900 placeholder:text-zinc-400 focus:border-emerald-500 focus:outline-none focus:ring-1 focus:ring-emerald-500 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-50",
-        className,
-      )}
-      {...props}
-    />
-  );
+  return <textarea className={cn(fieldBase, "resize-y", className)} {...props} />;
 }
 
 export function Select({ className, ...props }: ComponentProps<"select">) {
-  return (
-    <select
-      className={cn(
-        "w-full rounded-xl border border-zinc-300 bg-white px-4 py-2.5 text-sm text-zinc-900 focus:border-emerald-500 focus:outline-none focus:ring-1 focus:ring-emerald-500 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-50",
-        className,
-      )}
-      {...props}
-    />
-  );
+  return <select className={cn(fieldBase, "pr-8", className)} {...props} />;
 }
 
 export function Field({
@@ -122,6 +104,25 @@ export function Field({
         <p className="text-xs text-zinc-500 dark:text-zinc-400">{hint}</p>
       )}
       {error && <p className="text-xs text-red-600 dark:text-red-400">{error}</p>}
+    </div>
+  );
+}
+
+export function Card({
+  className,
+  children,
+}: {
+  className?: string;
+  children: ReactNode;
+}) {
+  return (
+    <div
+      className={cn(
+        "rounded-2xl border border-zinc-200/80 bg-white shadow-sm dark:border-zinc-800 dark:bg-zinc-900",
+        className,
+      )}
+    >
+      {children}
     </div>
   );
 }
@@ -175,13 +176,20 @@ export function EmptyState({
   title,
   children,
   action,
+  icon,
 }: {
   title: string;
   children?: ReactNode;
   action?: ReactNode;
+  icon?: ReactNode;
 }) {
   return (
-    <div className="rounded-2xl border border-zinc-200 bg-white p-12 text-center dark:border-zinc-800 dark:bg-zinc-900">
+    <div className="rounded-2xl border border-dashed border-zinc-300 bg-white p-12 text-center dark:border-zinc-700 dark:bg-zinc-900">
+      {icon && (
+        <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-emerald-50 text-emerald-600 dark:bg-emerald-950 dark:text-emerald-300">
+          {icon}
+        </div>
+      )}
       <h3 className="text-lg font-semibold text-zinc-800 dark:text-zinc-100">{title}</h3>
       {children && (
         <div className="mx-auto mt-2 max-w-md text-sm text-zinc-500 dark:text-zinc-400">
@@ -207,7 +215,7 @@ export function PageHeader({
       <div>
         <h1 className="text-3xl font-bold tracking-tight sm:text-4xl">{title}</h1>
         {subtitle && (
-          <p className="mt-2 text-zinc-600 dark:text-zinc-400">{subtitle}</p>
+          <p className="mt-2 text-zinc-500 dark:text-zinc-400">{subtitle}</p>
         )}
       </div>
       {action && <div className="flex shrink-0 gap-3">{action}</div>}
@@ -215,11 +223,53 @@ export function PageHeader({
   );
 }
 
-export function Badge({ children, className }: { children: ReactNode; className?: string }) {
+export function SectionHeading({
+  title,
+  subtitle,
+  action,
+  className,
+}: {
+  title: string;
+  subtitle?: ReactNode;
+  action?: ReactNode;
+  className?: string;
+}) {
+  return (
+    <div className={cn("flex items-end justify-between gap-4", className)}>
+      <div>
+        <h2 className="text-2xl font-bold tracking-tight sm:text-3xl">{title}</h2>
+        {subtitle && (
+          <p className="mt-1 text-sm text-zinc-500 dark:text-zinc-400">{subtitle}</p>
+        )}
+      </div>
+      {action && <div className="shrink-0">{action}</div>}
+    </div>
+  );
+}
+
+export function Badge({
+  children,
+  className,
+  tone = "default",
+}: {
+  children: ReactNode;
+  className?: string;
+  tone?: "default" | "emerald" | "amber" | "rose" | "zinc";
+}) {
+  const tones = {
+    default: "border-zinc-200 bg-white text-zinc-700 dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-200",
+    emerald:
+      "border-emerald-200 bg-emerald-50 text-emerald-700 dark:border-emerald-900 dark:bg-emerald-950 dark:text-emerald-300",
+    amber:
+      "border-amber-200 bg-amber-50 text-amber-700 dark:border-amber-900 dark:bg-amber-950 dark:text-amber-300",
+    rose: "border-rose-200 bg-rose-50 text-rose-700 dark:border-rose-900 dark:bg-rose-950 dark:text-rose-300",
+    zinc: "border-transparent bg-zinc-100 text-zinc-600 dark:bg-zinc-800 dark:text-zinc-300",
+  } as const;
   return (
     <span
       className={cn(
-        "inline-flex items-center rounded-full border border-zinc-200 bg-white px-2.5 py-0.5 text-xs font-medium text-zinc-700 dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-200",
+        "inline-flex items-center gap-1 rounded-full border px-2.5 py-0.5 text-xs font-medium",
+        tones[tone],
         className,
       )}
     >
@@ -228,14 +278,28 @@ export function Badge({ children, className }: { children: ReactNode; className?
   );
 }
 
-export function Stars({ rating }: { rating: number }) {
+export function Stars({
+  rating,
+  className,
+}: {
+  rating: number;
+  className?: string;
+}) {
   const rounded = Math.round(rating);
   return (
-    <span className="text-amber-500" aria-label={`${rating} out of 5`}>
-      {"★".repeat(Math.max(0, Math.min(5, rounded)))}
-      <span className="text-zinc-300 dark:text-zinc-600">
-        {"★".repeat(Math.max(0, 5 - rounded))}
-      </span>
+    <span
+      className={cn("inline-flex items-center gap-0.5 text-amber-500", className)}
+      aria-label={`${rating} out of 5`}
+    >
+      {[1, 2, 3, 4, 5].map((value) => (
+        <IconStar
+          key={value}
+          width={14}
+          height={14}
+          filled={value <= rounded}
+          className={value <= rounded ? "text-amber-500" : "text-zinc-300 dark:text-zinc-600"}
+        />
+      ))}
     </span>
   );
 }

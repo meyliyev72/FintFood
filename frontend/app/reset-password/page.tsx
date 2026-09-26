@@ -8,6 +8,7 @@ import {
   errorMessage,
   requestPasswordReset,
 } from "@/lib/api";
+import { AuthShell } from "@/components/auth-shell";
 import { Alert, Button, Field, Input, Spinner } from "@/components/ui";
 
 function RequestForm() {
@@ -46,6 +47,7 @@ function RequestForm() {
           id="email"
           type="email"
           autoComplete="email"
+          placeholder="you@example.com"
           required
           value={email}
           onChange={(event) => setEmail(event.target.value)}
@@ -93,7 +95,7 @@ function ConfirmForm({ uid, token }: { uid: string; token: string }) {
         </Alert>
         <Link
           href="/login"
-          className="inline-block font-medium text-emerald-700 hover:text-emerald-800 dark:text-emerald-400"
+          className="inline-block font-semibold text-emerald-700 hover:text-emerald-800 dark:text-emerald-400"
         >
           Go to log in →
         </Link>
@@ -108,6 +110,7 @@ function ConfirmForm({ uid, token }: { uid: string; token: string }) {
           id="password"
           type="password"
           autoComplete="new-password"
+          placeholder="••••••••"
           required
           value={password}
           onChange={(event) => setPassword(event.target.value)}
@@ -118,6 +121,7 @@ function ConfirmForm({ uid, token }: { uid: string; token: string }) {
           id="password2"
           type="password"
           autoComplete="new-password"
+          placeholder="••••••••"
           required
           value={password2}
           onChange={(event) => setPassword2(event.target.value)}
@@ -139,31 +143,28 @@ function ResetInner() {
   const isConfirm = Boolean(uid && token);
 
   return (
-    <div className="mx-auto w-full max-w-md px-4 py-16 sm:px-6">
-      <h1 className="text-3xl font-bold tracking-tight">
-        {isConfirm ? "Choose a new password" : "Reset your password"}
-      </h1>
-      <p className="mt-2 text-sm text-zinc-600 dark:text-zinc-400">
-        {isConfirm
+    <AuthShell
+      title={isConfirm ? "Choose a new password" : "Reset your password"}
+      subtitle={
+        isConfirm
           ? "Enter a new password for your FintFood account."
-          : "Enter your email and we'll send you a link to reset your password."}
-      </p>
-      <div className="mt-8 rounded-2xl border border-zinc-200 bg-white p-6 dark:border-zinc-800 dark:bg-zinc-900">
-        {isConfirm && uid && token ? (
-          <ConfirmForm uid={uid} token={token} />
-        ) : (
-          <RequestForm />
-        )}
-      </div>
-      <p className="mt-6 text-center text-sm text-zinc-600 dark:text-zinc-400">
+          : "Enter your email and we'll send you a link to reset your password."
+      }
+      footer={
         <Link
           href="/login"
-          className="font-medium text-emerald-700 hover:text-emerald-800 dark:text-emerald-400"
+          className="font-semibold text-emerald-700 hover:text-emerald-800 dark:text-emerald-400"
         >
           Back to log in
         </Link>
-      </p>
-    </div>
+      }
+    >
+      {isConfirm && uid && token ? (
+        <ConfirmForm uid={uid} token={token} />
+      ) : (
+        <RequestForm />
+      )}
+    </AuthShell>
   );
 }
 

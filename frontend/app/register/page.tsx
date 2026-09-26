@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { errorMessage } from "@/lib/api";
 import { useAuth } from "@/lib/auth";
+import { AuthShell } from "@/components/auth-shell";
 import { Alert, Button, Field, Input, Spinner } from "@/components/ui";
 
 export default function RegisterPage() {
@@ -37,21 +38,28 @@ export default function RegisterPage() {
   }
 
   return (
-    <div className="mx-auto w-full max-w-md px-4 py-16 sm:px-6">
-      <h1 className="text-3xl font-bold tracking-tight">Create your account</h1>
-      <p className="mt-2 text-sm text-zinc-600 dark:text-zinc-400">
-        It&apos;s free. Start matching recipes to the ingredients you already have.
-      </p>
-
-      <form
-        onSubmit={handleSubmit}
-        className="mt-8 space-y-5 rounded-2xl border border-zinc-200 bg-white p-6 dark:border-zinc-800 dark:bg-zinc-900"
-      >
+    <AuthShell
+      title="Create your account"
+      subtitle="It's free. Start matching recipes to the ingredients you already have."
+      footer={
+        <>
+          Already have an account?{" "}
+          <Link
+            href="/login"
+            className="font-semibold text-emerald-700 hover:text-emerald-800 dark:text-emerald-400"
+          >
+            Log in
+          </Link>
+        </>
+      }
+    >
+      <form onSubmit={handleSubmit} className="space-y-5">
         <Field label="Name" htmlFor="name" hint="Optional — shown on your reviews.">
           <Input
             id="name"
             type="text"
             autoComplete="name"
+            placeholder="Your name"
             value={name}
             onChange={(event) => setName(event.target.value)}
           />
@@ -61,6 +69,7 @@ export default function RegisterPage() {
             id="email"
             type="email"
             autoComplete="email"
+            placeholder="you@example.com"
             required
             value={email}
             onChange={(event) => setEmail(event.target.value)}
@@ -71,6 +80,7 @@ export default function RegisterPage() {
             id="password"
             type="password"
             autoComplete="new-password"
+            placeholder="••••••••"
             required
             value={password}
             onChange={(event) => setPassword(event.target.value)}
@@ -81,6 +91,7 @@ export default function RegisterPage() {
             id="password2"
             type="password"
             autoComplete="new-password"
+            placeholder="••••••••"
             required
             value={password2}
             onChange={(event) => setPassword2(event.target.value)}
@@ -93,17 +104,7 @@ export default function RegisterPage() {
           {busy ? <Spinner className="h-4 w-4 border-white/40 border-t-white" /> : null}
           {busy ? "Creating account…" : "Create account"}
         </Button>
-
-        <p className="text-center text-sm text-zinc-600 dark:text-zinc-400">
-          Already have an account?{" "}
-          <Link
-            href="/login"
-            className="font-medium text-emerald-700 hover:text-emerald-800 dark:text-emerald-400"
-          >
-            Log in
-          </Link>
-        </p>
       </form>
-    </div>
+    </AuthShell>
   );
 }

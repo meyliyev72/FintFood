@@ -16,9 +16,9 @@ import {
   EmptyState,
   Input,
   LoadingState,
-  PageHeader,
   Select,
 } from "@/components/ui";
+import { IconClose, IconSearch } from "@/components/icons";
 
 const DIFFICULTIES = [
   { value: "easy", label: "Easy" },
@@ -61,7 +61,9 @@ function RecipesInner() {
   const page = Number(searchParams.get("page") || "1");
 
   useEffect(() => {
-    getCategories().then(setCategories).catch(() => setCategories([]));
+    getCategories()
+      .then(setCategories)
+      .catch(() => setCategories([]));
   }, []);
 
   useEffect(() => {
@@ -109,46 +111,71 @@ function RecipesInner() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [search]);
 
-  const hasFilters = ["category", "difficulty", "time_range", "diet", "query"].some(
-    (key) => searchParams.get(key),
-  );
+  const activeCategory = searchParams.get("category") ?? "";
+  const hasFilters = [
+    "category",
+    "difficulty",
+    "time_range",
+    "diet",
+    "query",
+  ].some((key) => searchParams.get(key));
 
   return (
     <div className="mx-auto w-full max-w-7xl px-4 py-10 sm:px-6">
-      <PageHeader
-        title="Recipes"
-        subtitle={
-          data ? `${data.count} recipes available` : "Browse the full catalog"
-        }
-      />
+      <div className="flex flex-col gap-2">
+        <h1 className="text-3xl font-bold tracking-tight sm:text-4xl">Recipes</h1>
+        <p className="text-zinc-500 dark:text-zinc-400">
+          {data ? `${data.count} recipes available` : "Browse the full catalog"}
+        </p>
+      </div>
 
-      <div className="mt-8 grid gap-4 rounded-2xl border border-zinc-200 bg-white p-4 dark:border-zinc-800 dark:bg-zinc-900 sm:grid-cols-2 lg:grid-cols-3">
+      <div className="mt-6 flex gap-2 overflow-x-auto pb-1">
+        <button
+          type="button"
+          onClick={() => setParam("category", "")}
+          className={`shrink-0 rounded-full px-4 py-1.5 text-sm font-medium transition-colors ${
+            activeCategory === ""
+              ? "bg-emerald-600 text-white"
+              : "border border-zinc-200 bg-white text-zinc-600 hover:bg-zinc-50 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-300"
+          }`}
+        >
+          All
+        </button>
+        {categories.map((category) => (
+          <button
+            key={category.id}
+            type="button"
+            onClick={() => setParam("category", category.slug)}
+            className={`shrink-0 rounded-full px-4 py-1.5 text-sm font-medium transition-colors ${
+              activeCategory === category.slug
+                ? "bg-emerald-600 text-white"
+                : "border border-zinc-200 bg-white text-zinc-600 hover:bg-zinc-50 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-300"
+            }`}
+          >
+            {category.name}
+          </button>
+        ))}
+      </div>
+
+      <div className="mt-4 grid gap-4 rounded-2xl border border-zinc-200/80 bg-white p-4 shadow-sm dark:border-zinc-800 dark:bg-zinc-900 sm:grid-cols-2 lg:grid-cols-3">
         <div className="sm:col-span-2 lg:col-span-1">
           <label className="mb-1 block text-xs font-medium text-zinc-500 dark:text-zinc-400">
             Search
           </label>
-          <Input
-            type="search"
-            placeholder="Search by title or ingredient…"
-            value={search}
-            onChange={(event) => setSearch(event.target.value)}
-          />
-        </div>
-        <div>
-          <label className="mb-1 block text-xs font-medium text-zinc-500 dark:text-zinc-400">
-            Category
-          </label>
-          <Select
-            value={searchParams.get("category") ?? ""}
-            onChange={(event) => setParam("category", event.target.value)}
-          >
-            <option value="">All categories</option>
-            {categories.map((category) => (
-              <option key={category.id} value={category.slug}>
-                {category.name} ({category.recipe_count})
-              </option>
-            ))}
-          </Select>
+          <div className="relative">
+            <IconSearch
+              width={18}
+              height={18}
+              className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 text-zinc-400"
+            />
+            <Input
+              type="search"
+              className="pl-10"
+              placeholder="Title or ingredient…"
+              value={search}
+              onChange={(event) => setSearch(event.target.value)}
+            />
+          </div>
         </div>
         <div>
           <label className="mb-1 block text-xs font-medium text-zinc-500 dark:text-zinc-400">
@@ -217,9 +244,14 @@ function RecipesInner() {
 
       {hasFilters && (
         <div className="mt-3">
-          <Button variant="ghost" size="sm" onClick={() => router.push(pathname)}>
+          <button
+            type="button"
+            onClick={() => router.push(pathname)}
+            className="inline-flex items-center gap-1.5 rounded-full border border-zinc-200 bg-white px-3 py-1.5 text-xs font-medium text-zinc-600 transition-colors hover:bg-zinc-50 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-300"
+          >
+            <IconClose width={13} height={13} />
             Clear filters
-          </Button>
+          </button>
         </div>
       )}
 
@@ -229,12 +261,15 @@ function RecipesInner() {
         ) : loading ? (
           <LoadingState label="Loading recipes…" />
         ) : !data || data.results.length === 0 ? (
-          <EmptyState title="No recipes match your filters">
+          <EmptyState
+            title="No recipes match your filters"
+            icon={<IconSearch width={26} height={26} />}
+          >
             Try removing a filter or searching for something else.
           </EmptyState>
         ) : (
           <>
-            <div className="grid gap-6 sm:grid-cols-2 xl:grid-cols-3">
+            <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
               {data.results.map((recipe) => (
                 <RecipeCard key={recipe.id} recipe={recipe} />
               ))}

@@ -5,6 +5,7 @@ import { useState } from "react";
 import { errorMessage, toggleFavorite } from "@/lib/api";
 import { useAuth } from "@/lib/auth";
 import { cn } from "@/lib/utils";
+import { IconHeart } from "@/components/icons";
 
 export function FavoriteButton({
   recipeId,
@@ -48,13 +49,13 @@ export function FavoriteButton({
         onClick={handleClick}
         disabled={busy}
         className={cn(
-          "inline-flex items-center justify-center gap-2 rounded-full border px-5 py-2.5 text-sm font-semibold transition-colors disabled:opacity-60",
+          "inline-flex items-center justify-center gap-2 rounded-xl border px-5 py-2.5 text-sm font-semibold shadow-sm transition-all disabled:opacity-60 active:scale-[.98]",
           isFavorite
-            ? "border-red-200 bg-red-50 text-red-600 hover:bg-red-100 dark:border-red-900 dark:bg-red-950 dark:text-red-300"
-            : "border-zinc-300 text-zinc-700 hover:bg-zinc-100 dark:border-zinc-700 dark:text-zinc-200 dark:hover:bg-zinc-800",
+            ? "border-rose-200 bg-rose-50 text-rose-600 hover:bg-rose-100 dark:border-rose-900 dark:bg-rose-950 dark:text-rose-300"
+            : "border-zinc-200 bg-white text-zinc-700 hover:border-rose-200 hover:text-rose-600 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-200",
         )}
       >
-        <span aria-hidden>{isFavorite ? "♥" : "♡"}</span>
+        <IconHeart width={18} height={18} filled={isFavorite} />
         {isFavorite ? "Saved" : "Save"}
       </button>
       {error && <span className="text-xs text-red-600 dark:text-red-400">{error}</span>}

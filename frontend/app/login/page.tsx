@@ -5,6 +5,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { Suspense, useState } from "react";
 import { errorMessage } from "@/lib/api";
 import { useAuth } from "@/lib/auth";
+import { AuthShell } from "@/components/auth-shell";
 import { Alert, Button, Field, Input, Spinner } from "@/components/ui";
 
 function LoginForm() {
@@ -32,21 +33,28 @@ function LoginForm() {
   }
 
   return (
-    <div className="mx-auto w-full max-w-md px-4 py-16 sm:px-6">
-      <h1 className="text-3xl font-bold tracking-tight">Welcome back</h1>
-      <p className="mt-2 text-sm text-zinc-600 dark:text-zinc-400">
-        Log in to save favorites, build shopping lists and review recipes.
-      </p>
-
-      <form
-        onSubmit={handleSubmit}
-        className="mt-8 space-y-5 rounded-2xl border border-zinc-200 bg-white p-6 dark:border-zinc-800 dark:bg-zinc-900"
-      >
+    <AuthShell
+      title="Welcome back"
+      subtitle="Log in to save favorites, build shopping lists and review recipes."
+      footer={
+        <>
+          New to FintFood?{" "}
+          <Link
+            href="/register"
+            className="font-semibold text-emerald-700 hover:text-emerald-800 dark:text-emerald-400"
+          >
+            Create an account
+          </Link>
+        </>
+      }
+    >
+      <form onSubmit={handleSubmit} className="space-y-5">
         <Field label="Email" htmlFor="email">
           <Input
             id="email"
             type="email"
             autoComplete="email"
+            placeholder="you@example.com"
             required
             value={email}
             onChange={(event) => setEmail(event.target.value)}
@@ -57,6 +65,7 @@ function LoginForm() {
             id="password"
             type="password"
             autoComplete="current-password"
+            placeholder="••••••••"
             required
             value={password}
             onChange={(event) => setPassword(event.target.value)}
@@ -70,22 +79,16 @@ function LoginForm() {
           {busy ? "Logging in…" : "Log in"}
         </Button>
 
-        <div className="flex items-center justify-between text-sm">
+        <div className="text-center">
           <Link
             href="/reset-password"
-            className="text-emerald-700 hover:text-emerald-800 dark:text-emerald-400"
+            className="text-sm text-zinc-500 hover:text-emerald-700 dark:text-zinc-400"
           >
             Forgot password?
           </Link>
-          <Link
-            href="/register"
-            className="text-zinc-600 hover:text-zinc-900 dark:text-zinc-300 dark:hover:text-white"
-          >
-            Create an account
-          </Link>
         </div>
       </form>
-    </div>
+    </AuthShell>
   );
 }
 
