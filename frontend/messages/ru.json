@@ -35,7 +35,8 @@
     "unit": "Единица",
     "name": "Имя",
     "email": "Эл. почта",
-    "password": "Пароль"
+    "password": "Пароль",
+    "skipToContent": "Перейти к содержимому"
   },
   "nav": {
     "home": "Главная",
@@ -49,6 +50,7 @@
     "openMenu": "Открыть меню",
     "closeMenu": "Закрыть меню",
     "openUtilities": "Язык и тема",
+    "utilities": "Настройки",
     "searchPlaceholder": "Искать рецепты…",
     "primaryNavigation": "Основная"
   },

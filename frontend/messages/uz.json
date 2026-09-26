@@ -35,7 +35,8 @@
     "unit": "Birlik",
     "name": "Ism",
     "email": "Elektron pochta",
-    "password": "Parol"
+    "password": "Parol",
+    "skipToContent": "Asosiy kontentga oʻtish"
   },
   "nav": {
     "home": "Bosh sahifa",
@@ -49,6 +50,7 @@
     "openMenu": "Menyuni ochish",
     "closeMenu": "Menyuni yopish",
     "openUtilities": "Til va mavzu sozlamalari",
+    "utilities": "Sozlamalar",
     "searchPlaceholder": "Retseptlar izlash…",
     "primaryNavigation": "Asosiy"
   },

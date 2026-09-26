@@ -35,7 +35,8 @@
     "unit": "Unit",
     "name": "Name",
     "email": "Email",
-    "password": "Password"
+    "password": "Password",
+    "skipToContent": "Skip to content"
   },
   "nav": {
     "home": "Home",
@@ -49,6 +50,8 @@
     "openMenu": "Open menu",
     "closeMenu": "Close menu",
     "openUtilities": "Language and theme settings",
+    "utilities": "Settings",
+    "utilities": "Settings",
     "searchPlaceholder": "Search recipes…",
     "primaryNavigation": "Primary"
   },

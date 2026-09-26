@@ -3,7 +3,6 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useRouter } from "next/navigation";
 import { createContext, useCallback, useContext, useMemo, type ReactNode } from "react";
-import { toast } from "sonner";
 import { useTranslations } from "next-intl";
 
 import { authApi, type LoginInput, type RegisterInput } from "@/lib/api/auth";
@@ -27,7 +26,6 @@ const AuthContext = createContext<AuthContextValue | null>(null);
 export function AuthProvider({ children }: { children: ReactNode }) {
   const queryClient = useQueryClient();
   const router = useRouter();
-  const t = useTranslations("errors");
 
   // The access token is httpOnly, so the only way to know whether a session
   // exists is to ask the API. 401s resolve to `null` rather than throwing.
