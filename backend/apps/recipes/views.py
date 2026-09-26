@@ -12,6 +12,7 @@ from rest_framework.permissions import (
 )
 from rest_framework.response import Response
 
+from apps.core.i18n import get_request_language, localized
 from apps.ingredients.models import Ingredient
 from apps.reviews.models import Review
 
@@ -149,12 +150,9 @@ class RecipeViewSet(
 
     def destroy(self, request, *args, **kwargs):
         instance = self.get_object()
-        title = instance.title
         self.perform_destroy(instance)
-        return Response(
-            {"detail": f"Recipe \"{title}\" was deleted."},
-            status=status.HTTP_200_OK,
-        )
+        # Structured so the client can render its own localized message.
+        return Response({"deleted": True, "slug": instance.slug}, status=status.HTTP_200_OK)
 
     # ------------------------------------------------------------------
     # Ingredient matching — flagship "Find by Ingredients" feature
@@ -201,6 +199,7 @@ class RecipeViewSet(
         )
 
         matches = list(base)
+        language = get_request_language(request)
         for recipe in matches:
             recipe_ingredient_items = list(recipe.recipe_ingredients.all())
             matched_items = [
@@ -210,12 +209,16 @@ class RecipeViewSet(
                 ri for ri in recipe_ingredient_items if ri.ingredient_id not in ids
             ]
             recipe.matched_ingredients = [
-                {"id": ri.ingredient_id, "name": ri.ingredient.name} for ri in matched_items
+                {
+                    "id": ri.ingredient_id,
+                    "name": localized(ri.ingredient, "name", language),
+                }
+                for ri in matched_items
             ]
             recipe.missing_ingredients = [
                 {
                     "id": ri.ingredient_id,
-                    "name": ri.ingredient.name,
+                    "name": localized(ri.ingredient, "name", language),
                     "quantity": ri.display_quantity,
                     "unit": ri.get_unit_display(),
                 }
@@ -243,12 +246,13 @@ class RecipeViewSet(
             data["total_count"] = recipe.total_count
             results.append(data)
 
-        selected_names = list(
-            Ingredient.objects.filter(pk__in=ids).values_list("name", flat=True)
-        )
+        selected_ingredients = [
+            localized(ingredient, "name", language)
+            for ingredient in Ingredient.objects.filter(pk__in=ids)
+        ]
         return Response(
             {
-                "selected_ingredients": selected_names,
+                "selected_ingredients": selected_ingredients,
                 "count": len(results),
                 "results": results,
             },

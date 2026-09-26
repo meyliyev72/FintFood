@@ -6,6 +6,8 @@ from django.db import transaction
 from rest_framework import serializers
 from rest_framework.exceptions import AuthenticationFailed
 
+from apps.core.i18n import DEFAULT_LANGUAGE, SUPPORTED_LANGUAGES
+
 User = get_user_model()
 
 
@@ -112,6 +114,10 @@ class PasswordChangeSerializer(serializers.Serializer):
 
 class PasswordResetRequestSerializer(serializers.Serializer):
     email = serializers.EmailField()
+    # Locale prefix for the emailed link, so it opens in the user's language.
+    locale = serializers.ChoiceField(
+        choices=SUPPORTED_LANGUAGES, required=False, default=DEFAULT_LANGUAGE
+    )
 
 
 class PasswordResetConfirmSerializer(serializers.Serializer):

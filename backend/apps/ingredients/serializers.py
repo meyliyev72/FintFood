@@ -1,12 +1,20 @@
 from rest_framework import serializers
 
+from apps.core.i18n import get_request_language, localized
+
 from .models import Ingredient, IngredientCategory
 
 
 class IngredientCategorySerializer(serializers.ModelSerializer):
+    name = serializers.SerializerMethodField()
+    name_en = serializers.CharField(read_only=True)
+
     class Meta:
         model = IngredientCategory
-        fields = ["id", "name", "slug"]
+        fields = ["id", "name", "name_en", "slug"]
+
+    def get_name(self, obj) -> str:
+        return localized(obj, "name", get_request_language(self.context.get("request")))
 
 
 class IngredientSerializer(serializers.ModelSerializer):
@@ -15,10 +23,15 @@ class IngredientSerializer(serializers.ModelSerializer):
         source="category", write_only=True, queryset=IngredientCategory.objects.all(),
         required=False, allow_null=True,
     )
+    name = serializers.SerializerMethodField()
+    name_en = serializers.CharField(read_only=True)
 
     class Meta:
         model = Ingredient
-        fields = ["id", "name", "slug", "category", "category_id"]
+        fields = ["id", "name", "name_en", "slug", "category", "category_id"]
+
+    def get_name(self, obj) -> str:
+        return localized(obj, "name", get_request_language(self.context.get("request")))
 
     def create(self, validated_data):
         """Get-or-create free-text ingredients by name at write time."""

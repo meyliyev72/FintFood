@@ -7,7 +7,7 @@ from django.db.models import Q
 
 from apps.ingredients.models import Ingredient
 
-from .models import ShoppingListItem
+from .models import ShoppingListItem, localized_name_for_slug
 
 
 def _normalize(name: str) -> str:
@@ -23,7 +23,7 @@ def _to_decimal(quantity) -> Decimal:
         return Decimal(0)
 
 
-def merge_item(user, *, ingredient=None, name=None, quantity, unit):
+def merge_item(user, *, ingredient=None, name=None, quantity, unit, language="uz"):
     """Add or merge a single shopping-list item.
 
     Merge rule: same ingredient (matched case-insensitively by name OR by
@@ -31,11 +31,15 @@ def merge_item(user, *, ingredient=None, name=None, quantity, unit):
     ->  quantities are summed into the open line. Anything else (different
     unit, completed line, or no match) creates a fresh line. Spec §9.
     """
+    from apps.core.i18n import localized
+
     quantities = quantity if isinstance(quantity, (list, tuple)) else [quantity]
     if ingredient is not None:
-        display_name = ingredient.name
+        # Store the localized label so the list reads naturally in the user's
+        # language; matching still works because it also matches on the FK.
+        display_name = localized(ingredient, "name", language)
     else:
-        display_name = (name or "").strip() or "Item"
+        display_name = (name or "").strip() or localized_name_for_slug("other", language)
         ingredient = Ingredient.objects.filter(name__iexact=display_name).first()
 
     created_lines = []

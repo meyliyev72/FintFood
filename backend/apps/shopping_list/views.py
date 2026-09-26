@@ -5,6 +5,7 @@ from rest_framework.decorators import action
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 
+from apps.core.i18n import get_request_language
 from apps.recipes.models import Recipe
 
 from .models import ShoppingListItem
@@ -33,7 +34,7 @@ class ShoppingListItemViewSet(viewsets.ModelViewSet):
     def destroy(self, request, *args, **kwargs):
         item = self.get_object()
         item.delete()
-        return Response({"detail": "Item removed."}, status=status.HTTP_200_OK)
+        return Response({"deleted": 1}, status=status.HTTP_200_OK)
 
     @action(detail=False, methods=["post"], url_path="add-from-recipe")
     def add_from_recipe(self, request):
@@ -41,8 +42,11 @@ class ShoppingListItemViewSet(viewsets.ModelViewSet):
         serializer.is_valid(raise_exception=True)
         data = serializer.validated_data
         recipe = get_object_or_404(Recipe, pk=data["recipe_id"])
+        language = get_request_language(request)
 
-        recipe_ingredients = recipe.recipe_ingredients.select_related("ingredient").all()
+        recipe_ingredients = recipe.recipe_ingredients.select_related(
+            "ingredient__category"
+        ).all()
         if data.get("ingredient_ids"):
             recipe_ingredients = recipe_ingredients.filter(
                 ingredient_id__in=data["ingredient_ids"]
@@ -57,6 +61,7 @@ class ShoppingListItemViewSet(viewsets.ModelViewSet):
                 name=ri.ingredient.name,
                 quantity=ri.quantity,
                 unit=ri.unit,
+                language=language,
             )
             for item in items:
                 if getattr(item, "merge_created", False):
@@ -64,15 +69,10 @@ class ShoppingListItemViewSet(viewsets.ModelViewSet):
                 else:
                     merged += 1
 
-        return Response(
-            {"detail": f"Added {added} item(s) to your shopping list ({merged} merged)."},
-            status=status.HTTP_200_OK,
-        )
+        # Counts only: the client formats the message in the active language.
+        return Response({"added": added, "merged": merged}, status=status.HTTP_200_OK)
 
     @action(detail=False, methods=["post"], url_path="clear-completed")
     def clear_completed(self, request):
         deleted, _ = self.get_queryset().filter(is_completed=True).delete()
-        return Response(
-            {"detail": f"Cleared {deleted} completed item(s)."},
-            status=status.HTTP_200_OK,
-        )
+        return Response({"deleted": deleted}, status=status.HTTP_200_OK)

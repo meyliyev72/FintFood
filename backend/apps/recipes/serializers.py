@@ -7,6 +7,7 @@ from rest_framework import serializers
 
 from apps.accounts.serializers import UserSerializer
 from apps.categories.serializers import CategorySerializer
+from apps.core.i18n import get_request_language, localized
 from apps.ingredients.models import Ingredient
 from apps.reviews.serializers import ReviewSerializer
 
@@ -32,15 +33,24 @@ def round_half_up(value, places=1):
 
 class RecipeIngredientSerializer(serializers.ModelSerializer):
     id = serializers.IntegerField(source="ingredient.id", read_only=True)
-    name = serializers.CharField(source="ingredient.name", read_only=True)
+    name = serializers.SerializerMethodField()
     slug = serializers.SlugField(source="ingredient.slug", read_only=True)
-    category = serializers.StringRelatedField(
-        source="ingredient.category", read_only=True
-    )
+    category = serializers.SerializerMethodField()
 
     class Meta:
         model = RecipeIngredient
         fields = ["id", "name", "slug", "category", "quantity", "unit"]
+
+    def get_name(self, obj) -> str:
+        # User-authored recipes keep their own text; only the catalog ingredient
+        # name is translated (§3.3).
+        return localized(obj.ingredient, "name", get_request_language(self.context.get("request")))
+
+    def get_category(self, obj):
+        category = obj.ingredient.category
+        if not category:
+            return None
+        return localized(category, "name", get_request_language(self.context.get("request")))
 
 
 class InstructionStepSerializer(serializers.ModelSerializer):

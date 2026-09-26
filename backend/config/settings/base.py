@@ -131,7 +131,9 @@ AUTH_PASSWORD_VALIDATORS = [
 # Internationalization
 # ---------------------------------------------------------------------------
 
-LANGUAGE_CODE = "en-us"
+# FintFood's default language is Uzbek (§3.3); the API resolves catalog labels
+# per request via ?lang= / Accept-Language (apps.core.i18n).
+LANGUAGE_CODE = "uz"
 TIME_ZONE = os.environ.get("DJANGO_TIME_ZONE", "UTC")
 USE_I18N = True
 USE_TZ = True

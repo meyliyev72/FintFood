@@ -1,0 +1,2280 @@
+openapi: 3.0.3
+info:
+  title: FintFood API
+  version: 1.0.0
+  description: REST API for the FintFood recipe discovery platform.
+paths:
+  /api/v1/admin-stats/:
+    get:
+      operationId: api_v1_admin_stats_retrieve
+      description: Dashboard statistics for the admin interface.
+      tags:
+      - api
+      responses:
+        '200':
+          description: No response body
+  /api/v1/auth/login/:
+    post:
+      operationId: api_v1_auth_login_create
+      description: Base view with the JWT cookie plumbing shared by token-emitting
+        endpoints.
+      tags:
+      - api
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LoginRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/LoginRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/LoginRequest'
+        required: true
+      security:
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Login'
+          description: ''
+  /api/v1/auth/logout/:
+    post:
+      operationId: api_v1_auth_logout_create
+      tags:
+      - api
+      responses:
+        '200':
+          description: No response body
+  /api/v1/auth/me/:
+    get:
+      operationId: api_v1_auth_me_retrieve
+      tags:
+      - api
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+          description: ''
+    put:
+      operationId: api_v1_auth_me_update
+      tags:
+      - api
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UserRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/UserRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/UserRequest'
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+          description: ''
+    patch:
+      operationId: api_v1_auth_me_partial_update
+      tags:
+      - api
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedUserRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedUserRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedUserRequest'
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+          description: ''
+  /api/v1/auth/password/change/:
+    post:
+      operationId: api_v1_auth_password_change_create
+      tags:
+      - api
+      responses:
+        '200':
+          description: No response body
+  /api/v1/auth/password/reset/:
+    post:
+      operationId: api_v1_auth_password_reset_create
+      tags:
+      - api
+      security:
+      - {}
+      responses:
+        '200':
+          description: No response body
+  /api/v1/auth/password/reset/confirm/:
+    post:
+      operationId: api_v1_auth_password_reset_confirm_create
+      tags:
+      - api
+      security:
+      - {}
+      responses:
+        '200':
+          description: No response body
+  /api/v1/auth/refresh/:
+    post:
+      operationId: api_v1_auth_refresh_create
+      description: Rotate the refresh token and re-issue cookies.
+      tags:
+      - api
+      security:
+      - {}
+      responses:
+        '200':
+          description: No response body
+  /api/v1/auth/register/:
+    post:
+      operationId: api_v1_auth_register_create
+      description: Base view with the JWT cookie plumbing shared by token-emitting
+        endpoints.
+      tags:
+      - api
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RegisterRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/RegisterRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/RegisterRequest'
+        required: true
+      security:
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Register'
+          description: ''
+  /api/v1/auth/verify/:
+    post:
+      operationId: api_v1_auth_verify_create
+      description: |-
+        Takes a token and indicates if it is valid.  This view provides no
+        information about a token's fitness for a particular use.
+      tags:
+      - api
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TokenVerifyRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/TokenVerifyRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/TokenVerifyRequest'
+        required: true
+      responses:
+        '200':
+          description: No response body
+  /api/v1/categories/:
+    get:
+      operationId: api_v1_categories_list
+      parameters:
+      - name: ordering
+        required: false
+        in: query
+        description: Which field to use when ordering the results.
+        schema:
+          type: string
+      - name: search
+        required: false
+        in: query
+        description: A search term.
+        schema:
+          type: string
+      tags:
+      - api
+      security:
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Category'
+          description: ''
+  /api/v1/categories/{slug}/:
+    get:
+      operationId: api_v1_categories_retrieve
+      parameters:
+      - in: path
+        name: slug
+        schema:
+          type: string
+        required: true
+      tags:
+      - api
+      security:
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Category'
+          description: ''
+  /api/v1/favorites/:
+    get:
+      operationId: api_v1_favorites_list
+      parameters:
+      - name: ordering
+        required: false
+        in: query
+        description: Which field to use when ordering the results.
+        schema:
+          type: string
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      - name: page_size
+        required: false
+        in: query
+        description: Number of results to return per page.
+        schema:
+          type: integer
+      - name: search
+        required: false
+        in: query
+        description: A search term.
+        schema:
+          type: string
+      tags:
+      - api
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedFavoriteList'
+          description: ''
+    post:
+      operationId: api_v1_favorites_create
+      tags:
+      - api
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Favorite'
+          description: ''
+  /api/v1/favorites/{id}/:
+    get:
+      operationId: api_v1_favorites_retrieve
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+        required: true
+      tags:
+      - api
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Favorite'
+          description: ''
+    put:
+      operationId: api_v1_favorites_update
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+        required: true
+      tags:
+      - api
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Favorite'
+          description: ''
+    patch:
+      operationId: api_v1_favorites_partial_update
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+        required: true
+      tags:
+      - api
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Favorite'
+          description: ''
+    delete:
+      operationId: api_v1_favorites_destroy
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+        required: true
+      tags:
+      - api
+      responses:
+        '204':
+          description: No response body
+  /api/v1/favorites/ids/:
+    get:
+      operationId: api_v1_favorites_ids_retrieve
+      description: Return the list of favorited recipe ids for the current user.
+      tags:
+      - api
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Favorite'
+          description: ''
+  /api/v1/favorites/toggle/:
+    post:
+      operationId: api_v1_favorites_toggle_create
+      tags:
+      - api
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Favorite'
+          description: ''
+  /api/v1/health/:
+    get:
+      operationId: api_v1_health_retrieve
+      tags:
+      - api
+      security:
+      - {}
+      responses:
+        '200':
+          description: No response body
+  /api/v1/ingredients/:
+    get:
+      operationId: api_v1_ingredients_list
+      parameters:
+      - name: ordering
+        required: false
+        in: query
+        description: Which field to use when ordering the results.
+        schema:
+          type: string
+      - name: search
+        required: false
+        in: query
+        description: A search term.
+        schema:
+          type: string
+      tags:
+      - api
+      security:
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Ingredient'
+          description: ''
+  /api/v1/ingredients/categories/:
+    get:
+      operationId: api_v1_ingredients_categories_list
+      parameters:
+      - name: ordering
+        required: false
+        in: query
+        description: Which field to use when ordering the results.
+        schema:
+          type: string
+      - name: search
+        required: false
+        in: query
+        description: A search term.
+        schema:
+          type: string
+      tags:
+      - api
+      security:
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/IngredientCategory'
+          description: ''
+  /api/v1/recipes/:
+    get:
+      operationId: api_v1_recipes_list
+      parameters:
+      - in: query
+        name: category
+        schema:
+          type: string
+        description: Category slug
+      - in: query
+        name: diet
+        schema:
+          type: string
+      - in: query
+        name: difficulty
+        schema:
+          type: string
+      - in: query
+        name: max_time
+        schema:
+          type: number
+        description: Max total minutes
+      - name: ordering
+        required: false
+        in: query
+        description: Which field to use when ordering the results.
+        schema:
+          type: string
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      - name: page_size
+        required: false
+        in: query
+        description: Number of results to return per page.
+        schema:
+          type: integer
+      - in: query
+        name: query
+        schema:
+          type: string
+        description: Full-text search
+      - name: search
+        required: false
+        in: query
+        description: A search term.
+        schema:
+          type: string
+      - in: query
+        name: time_range
+        schema:
+          type: string
+          enum:
+          - 15-30
+          - 30-60
+          - 60+
+          - under-15
+        description: |-
+          * `under-15` - Under 15 min
+          * `15-30` - 15-30 min
+          * `30-60` - 30-60 min
+          * `60+` - 60+ min
+      tags:
+      - api
+      security:
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedRecipeListList'
+          description: ''
+    post:
+      operationId: api_v1_recipes_create
+      tags:
+      - api
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RecipeWriteRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/RecipeWriteRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/RecipeWriteRequest'
+        required: true
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RecipeWrite'
+          description: ''
+  /api/v1/recipes/{slug}/:
+    get:
+      operationId: api_v1_recipes_retrieve
+      parameters:
+      - in: path
+        name: slug
+        schema:
+          type: string
+        required: true
+      tags:
+      - api
+      security:
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RecipeDetail'
+          description: ''
+    put:
+      operationId: api_v1_recipes_update
+      parameters:
+      - in: path
+        name: slug
+        schema:
+          type: string
+        required: true
+      tags:
+      - api
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RecipeWriteRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/RecipeWriteRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/RecipeWriteRequest'
+        required: true
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RecipeWrite'
+          description: ''
+    patch:
+      operationId: api_v1_recipes_partial_update
+      parameters:
+      - in: path
+        name: slug
+        schema:
+          type: string
+        required: true
+      tags:
+      - api
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedRecipeWriteRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedRecipeWriteRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedRecipeWriteRequest'
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RecipeWrite'
+          description: ''
+    delete:
+      operationId: api_v1_recipes_destroy
+      parameters:
+      - in: path
+        name: slug
+        schema:
+          type: string
+        required: true
+      tags:
+      - api
+      responses:
+        '204':
+          description: No response body
+  /api/v1/recipes/match-by-ingredients/:
+    post:
+      operationId: api_v1_recipes_match_by_ingredients_create
+      tags:
+      - api
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RecipeListRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/RecipeListRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/RecipeListRequest'
+        required: true
+      security:
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RecipeList'
+          description: ''
+  /api/v1/recipes/my/:
+    get:
+      operationId: api_v1_recipes_my_retrieve
+      description: Recipes authored by the current user (all statuses).
+      tags:
+      - api
+      security:
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RecipeList'
+          description: ''
+  /api/v1/recipes/recently_viewed/:
+    get:
+      operationId: api_v1_recipes_recently_viewed_retrieve
+      description: Recently viewed recipes for the current user (max 12).
+      tags:
+      - api
+      security:
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RecipeList'
+          description: ''
+  /api/v1/reports/:
+    get:
+      operationId: api_v1_reports_list
+      description: Moderation reports. Any authenticated user may file one; admins
+        manage them in Django admin.
+      parameters:
+      - name: ordering
+        required: false
+        in: query
+        description: Which field to use when ordering the results.
+        schema:
+          type: string
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      - name: page_size
+        required: false
+        in: query
+        description: Number of results to return per page.
+        schema:
+          type: integer
+      - name: search
+        required: false
+        in: query
+        description: A search term.
+        schema:
+          type: string
+      tags:
+      - api
+      security:
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedReportList'
+          description: ''
+    post:
+      operationId: api_v1_reports_create
+      description: Moderation reports. Any authenticated user may file one; admins
+        manage them in Django admin.
+      tags:
+      - api
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ReportRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/ReportRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/ReportRequest'
+        required: true
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Report'
+          description: ''
+  /api/v1/reviews/:
+    get:
+      operationId: api_v1_reviews_list
+      parameters:
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      - name: page_size
+        required: false
+        in: query
+        description: Number of results to return per page.
+        schema:
+          type: integer
+      - in: query
+        name: recipe
+        schema:
+          type: integer
+      tags:
+      - api
+      security:
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedReviewList'
+          description: ''
+    post:
+      operationId: api_v1_reviews_create
+      tags:
+      - api
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ReviewRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/ReviewRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/ReviewRequest'
+        required: true
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Review'
+          description: ''
+  /api/v1/reviews/{id}/:
+    put:
+      operationId: api_v1_reviews_update
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this review.
+        required: true
+      tags:
+      - api
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ReviewRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/ReviewRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/ReviewRequest'
+        required: true
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Review'
+          description: ''
+    patch:
+      operationId: api_v1_reviews_partial_update
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this review.
+        required: true
+      tags:
+      - api
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedReviewRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedReviewRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedReviewRequest'
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Review'
+          description: ''
+    delete:
+      operationId: api_v1_reviews_destroy
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this review.
+        required: true
+      tags:
+      - api
+      responses:
+        '204':
+          description: No response body
+  /api/v1/shopping-list/:
+    get:
+      operationId: api_v1_shopping_list_list
+      parameters:
+      - name: ordering
+        required: false
+        in: query
+        description: Which field to use when ordering the results.
+        schema:
+          type: string
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      - name: page_size
+        required: false
+        in: query
+        description: Number of results to return per page.
+        schema:
+          type: integer
+      - name: search
+        required: false
+        in: query
+        description: A search term.
+        schema:
+          type: string
+      tags:
+      - api
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedShoppingListItemList'
+          description: ''
+    post:
+      operationId: api_v1_shopping_list_create
+      tags:
+      - api
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ShoppingListItemRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/ShoppingListItemRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/ShoppingListItemRequest'
+        required: true
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ShoppingListItem'
+          description: ''
+  /api/v1/shopping-list/{id}/:
+    get:
+      operationId: api_v1_shopping_list_retrieve
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+        required: true
+      tags:
+      - api
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ShoppingListItem'
+          description: ''
+    patch:
+      operationId: api_v1_shopping_list_partial_update
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+        required: true
+      tags:
+      - api
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedShoppingListItemRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedShoppingListItemRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedShoppingListItemRequest'
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ShoppingListItem'
+          description: ''
+    delete:
+      operationId: api_v1_shopping_list_destroy
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+        required: true
+      tags:
+      - api
+      responses:
+        '204':
+          description: No response body
+  /api/v1/shopping-list/add-from-recipe/:
+    post:
+      operationId: api_v1_shopping_list_add_from_recipe_create
+      tags:
+      - api
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ShoppingListItemRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/ShoppingListItemRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/ShoppingListItemRequest'
+        required: true
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ShoppingListItem'
+          description: ''
+  /api/v1/shopping-list/clear-completed/:
+    post:
+      operationId: api_v1_shopping_list_clear_completed_create
+      tags:
+      - api
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ShoppingListItemRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/ShoppingListItemRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/ShoppingListItemRequest'
+        required: true
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ShoppingListItem'
+          description: ''
+components:
+  schemas:
+    Category:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        name:
+          type: string
+          readOnly: true
+        name_en:
+          type: string
+          readOnly: true
+        slug:
+          type: string
+          maxLength: 100
+          pattern: ^[-a-zA-Z0-9_]+$
+        description:
+          type: string
+          readOnly: true
+        image:
+          type: string
+          readOnly: true
+        recipe_count:
+          type: integer
+          readOnly: true
+      required:
+      - description
+      - id
+      - image
+      - name
+      - name_en
+      - recipe_count
+      - slug
+    CategoryRequest:
+      type: object
+      properties:
+        slug:
+          type: string
+          minLength: 1
+          maxLength: 100
+          pattern: ^[-a-zA-Z0-9_]+$
+      required:
+      - slug
+    ContentTypeEnum:
+      enum:
+      - recipe
+      - review
+      type: string
+      description: |-
+        * `recipe` - recipe
+        * `review` - review
+    DifficultyEnum:
+      enum:
+      - easy
+      - medium
+      - hard
+      type: string
+      description: |-
+        * `easy` - Easy
+        * `medium` - Medium
+        * `hard` - Hard
+    Favorite:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        recipe:
+          allOf:
+          - $ref: '#/components/schemas/RecipeList'
+          readOnly: true
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - created_at
+      - id
+      - recipe
+    Ingredient:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        name:
+          type: string
+          readOnly: true
+        name_en:
+          type: string
+          readOnly: true
+        slug:
+          type: string
+          maxLength: 100
+          pattern: ^[-a-zA-Z0-9_]+$
+        category:
+          allOf:
+          - $ref: '#/components/schemas/IngredientCategory'
+          readOnly: true
+      required:
+      - category
+      - id
+      - name
+      - name_en
+      - slug
+    IngredientCategory:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        name:
+          type: string
+          readOnly: true
+        name_en:
+          type: string
+          readOnly: true
+        slug:
+          type: string
+          maxLength: 100
+          pattern: ^[-a-zA-Z0-9_]+$
+      required:
+      - id
+      - name
+      - name_en
+      - slug
+    IngredientInput:
+      type: object
+      properties:
+        ingredient_id:
+          type: integer
+          nullable: true
+        name:
+          type: string
+        quantity:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,6}(?:\.\d{0,2})?$
+        unit:
+          $ref: '#/components/schemas/UnitEnum'
+      required:
+      - quantity
+      - unit
+    IngredientInputRequest:
+      type: object
+      properties:
+        ingredient_id:
+          type: integer
+          nullable: true
+        name:
+          type: string
+        quantity:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,6}(?:\.\d{0,2})?$
+        unit:
+          $ref: '#/components/schemas/UnitEnum'
+      required:
+      - quantity
+      - unit
+    InstructionStep:
+      type: object
+      properties:
+        step_number:
+          type: integer
+          maximum: 9223372036854775807
+          minimum: 0
+          format: int64
+        instruction:
+          type: string
+        image:
+          type: string
+          readOnly: true
+      required:
+      - image
+      - instruction
+      - step_number
+    Login:
+      type: object
+      properties:
+        email:
+          type: string
+          format: email
+        password:
+          type: string
+      required:
+      - email
+      - password
+    LoginRequest:
+      type: object
+      properties:
+        email:
+          type: string
+          format: email
+          minLength: 1
+        password:
+          type: string
+          minLength: 1
+      required:
+      - email
+      - password
+    PaginatedFavoriteList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/Favorite'
+    PaginatedRecipeListList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/RecipeList'
+    PaginatedReportList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/Report'
+    PaginatedReviewList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/Review'
+    PaginatedShoppingListItemList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/ShoppingListItem'
+    PatchedRecipeWriteRequest:
+      type: object
+      description: |-
+        Create/update handler for recipes with dynamic nested lists.
+
+        Accepts ingredients as [{ingredient_id|name, quantity, unit}] and
+        steps as [{step_number, instruction, image}]. Images are optional
+        extra gallery images and are replaced on each update.
+      properties:
+        title:
+          type: string
+          minLength: 1
+          maxLength: 200
+        description:
+          type: string
+        category_id:
+          type: integer
+          writeOnly: true
+          nullable: true
+        cooking_time:
+          type: integer
+          maximum: 9223372036854775807
+          minimum: 0
+          format: int64
+          description: Cooking time in minutes
+        prep_time:
+          type: integer
+          maximum: 9223372036854775807
+          minimum: 0
+          format: int64
+          description: Prep time in minutes
+        servings:
+          type: integer
+          maximum: 9223372036854775807
+          minimum: 0
+          format: int64
+        difficulty:
+          $ref: '#/components/schemas/DifficultyEnum'
+        status:
+          allOf:
+          - $ref: '#/components/schemas/StatusEnum'
+          default: published
+        calories:
+          type: integer
+          maximum: 9223372036854775807
+          minimum: 0
+          format: int64
+          nullable: true
+        protein:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,5}(?:\.\d{0,1})?$
+          nullable: true
+          description: grams
+        carbs:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,5}(?:\.\d{0,1})?$
+          nullable: true
+          description: grams
+        fat:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,5}(?:\.\d{0,1})?$
+          nullable: true
+          description: grams
+        ingredients:
+          type: array
+          items:
+            $ref: '#/components/schemas/IngredientInputRequest'
+          writeOnly: true
+        steps:
+          type: array
+          items:
+            $ref: '#/components/schemas/StepInputRequest'
+          writeOnly: true
+        extra_images:
+          type: array
+          items:
+            type: string
+            format: binary
+          writeOnly: true
+    PatchedReviewRequest:
+      type: object
+      properties:
+        recipe_id:
+          type: integer
+          writeOnly: true
+        rating:
+          allOf:
+          - $ref: '#/components/schemas/RatingEnum'
+          minimum: 0
+          maximum: 9223372036854775807
+        comment:
+          type: string
+    PatchedShoppingListItemRequest:
+      type: object
+      properties:
+        name:
+          type: string
+          minLength: 1
+          maxLength: 150
+        quantity:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,6}(?:\.\d{0,2})?$
+        unit:
+          $ref: '#/components/schemas/UnitEnum'
+        is_completed:
+          type: boolean
+    PatchedUserRequest:
+      type: object
+      properties:
+        name:
+          type: string
+          maxLength: 150
+        bio:
+          type: string
+    RatingEnum:
+      enum:
+      - 1
+      - 2
+      - 3
+      - 4
+      - 5
+      type: integer
+      description: |-
+        * `1` - 1
+        * `2` - 2
+        * `3` - 3
+        * `4` - 4
+        * `5` - 5
+    RecipeDetail:
+      type: object
+      description: 'Recipe full view: ingredients, steps, gallery, nutrition.'
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        title:
+          type: string
+          maxLength: 200
+        slug:
+          type: string
+          maxLength: 100
+          pattern: ^[-a-zA-Z0-9_]+$
+        description:
+          type: string
+        image:
+          type: string
+          readOnly: true
+        category:
+          allOf:
+          - $ref: '#/components/schemas/Category'
+          readOnly: true
+        author:
+          allOf:
+          - $ref: '#/components/schemas/User'
+          readOnly: true
+        cooking_time:
+          type: integer
+          maximum: 9223372036854775807
+          minimum: 0
+          format: int64
+          description: Cooking time in minutes
+        prep_time:
+          type: integer
+          maximum: 9223372036854775807
+          minimum: 0
+          format: int64
+          description: Prep time in minutes
+        total_time:
+          type: integer
+          readOnly: true
+        servings:
+          type: integer
+          maximum: 9223372036854775807
+          minimum: 0
+          format: int64
+        difficulty:
+          type: string
+          readOnly: true
+        average_rating:
+          type: string
+          readOnly: true
+        review_count:
+          type: integer
+          readOnly: true
+        is_favorite:
+          type: string
+          readOnly: true
+        ingredients_count:
+          type: integer
+          readOnly: true
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        ingredients:
+          type: array
+          items:
+            $ref: '#/components/schemas/RecipeIngredient'
+          readOnly: true
+        steps:
+          type: array
+          items:
+            $ref: '#/components/schemas/InstructionStep'
+          readOnly: true
+        images:
+          type: array
+          items:
+            $ref: '#/components/schemas/RecipeImage'
+          readOnly: true
+        calories:
+          type: integer
+          readOnly: true
+        protein:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,5}(?:\.\d{0,1})?$
+          readOnly: true
+        carbs:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,5}(?:\.\d{0,1})?$
+          readOnly: true
+        fat:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,5}(?:\.\d{0,1})?$
+          readOnly: true
+        reviews:
+          type: array
+          items:
+            $ref: '#/components/schemas/Review'
+          readOnly: true
+      required:
+      - author
+      - average_rating
+      - calories
+      - carbs
+      - category
+      - cooking_time
+      - created_at
+      - difficulty
+      - fat
+      - id
+      - image
+      - images
+      - ingredients
+      - ingredients_count
+      - is_favorite
+      - protein
+      - review_count
+      - reviews
+      - slug
+      - steps
+      - title
+      - total_time
+    RecipeImage:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        url:
+          type: string
+          readOnly: true
+        alt:
+          type: string
+          maxLength: 200
+      required:
+      - id
+      - url
+    RecipeIngredient:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        name:
+          type: string
+          readOnly: true
+        slug:
+          type: string
+          readOnly: true
+          pattern: ^[-a-zA-Z0-9_]+$
+        category:
+          type: string
+          readOnly: true
+        quantity:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,6}(?:\.\d{0,2})?$
+        unit:
+          $ref: '#/components/schemas/UnitEnum'
+      required:
+      - category
+      - id
+      - name
+      - slug
+    RecipeList:
+      type: object
+      description: Field set used by every card/grid view.
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        title:
+          type: string
+          maxLength: 200
+        slug:
+          type: string
+          maxLength: 100
+          pattern: ^[-a-zA-Z0-9_]+$
+        description:
+          type: string
+        image:
+          type: string
+          readOnly: true
+        category:
+          allOf:
+          - $ref: '#/components/schemas/Category'
+          readOnly: true
+        author:
+          allOf:
+          - $ref: '#/components/schemas/User'
+          readOnly: true
+        cooking_time:
+          type: integer
+          maximum: 9223372036854775807
+          minimum: 0
+          format: int64
+          description: Cooking time in minutes
+        prep_time:
+          type: integer
+          maximum: 9223372036854775807
+          minimum: 0
+          format: int64
+          description: Prep time in minutes
+        total_time:
+          type: integer
+          readOnly: true
+        servings:
+          type: integer
+          maximum: 9223372036854775807
+          minimum: 0
+          format: int64
+        difficulty:
+          type: string
+          readOnly: true
+        average_rating:
+          type: string
+          readOnly: true
+        review_count:
+          type: integer
+          readOnly: true
+        is_favorite:
+          type: string
+          readOnly: true
+        ingredients_count:
+          type: integer
+          readOnly: true
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - author
+      - average_rating
+      - category
+      - cooking_time
+      - created_at
+      - difficulty
+      - id
+      - image
+      - ingredients_count
+      - is_favorite
+      - review_count
+      - slug
+      - title
+      - total_time
+    RecipeListRequest:
+      type: object
+      description: Field set used by every card/grid view.
+      properties:
+        title:
+          type: string
+          minLength: 1
+          maxLength: 200
+        slug:
+          type: string
+          minLength: 1
+          maxLength: 100
+          pattern: ^[-a-zA-Z0-9_]+$
+        description:
+          type: string
+        cooking_time:
+          type: integer
+          maximum: 9223372036854775807
+          minimum: 0
+          format: int64
+          description: Cooking time in minutes
+        prep_time:
+          type: integer
+          maximum: 9223372036854775807
+          minimum: 0
+          format: int64
+          description: Prep time in minutes
+        servings:
+          type: integer
+          maximum: 9223372036854775807
+          minimum: 0
+          format: int64
+      required:
+      - cooking_time
+      - slug
+      - title
+    RecipeWrite:
+      type: object
+      description: |-
+        Create/update handler for recipes with dynamic nested lists.
+
+        Accepts ingredients as [{ingredient_id|name, quantity, unit}] and
+        steps as [{step_number, instruction, image}]. Images are optional
+        extra gallery images and are replaced on each update.
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        slug:
+          type: string
+          readOnly: true
+          pattern: ^[-a-zA-Z0-9_]+$
+        title:
+          type: string
+          maxLength: 200
+        description:
+          type: string
+        cover_image:
+          type: string
+          format: uri
+          readOnly: true
+        cooking_time:
+          type: integer
+          maximum: 9223372036854775807
+          minimum: 0
+          format: int64
+          description: Cooking time in minutes
+        prep_time:
+          type: integer
+          maximum: 9223372036854775807
+          minimum: 0
+          format: int64
+          description: Prep time in minutes
+        servings:
+          type: integer
+          maximum: 9223372036854775807
+          minimum: 0
+          format: int64
+        difficulty:
+          $ref: '#/components/schemas/DifficultyEnum'
+        status:
+          allOf:
+          - $ref: '#/components/schemas/StatusEnum'
+          default: published
+        calories:
+          type: integer
+          maximum: 9223372036854775807
+          minimum: 0
+          format: int64
+          nullable: true
+        protein:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,5}(?:\.\d{0,1})?$
+          nullable: true
+          description: grams
+        carbs:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,5}(?:\.\d{0,1})?$
+          nullable: true
+          description: grams
+        fat:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,5}(?:\.\d{0,1})?$
+          nullable: true
+          description: grams
+      required:
+      - cooking_time
+      - cover_image
+      - id
+      - slug
+      - title
+    RecipeWriteRequest:
+      type: object
+      description: |-
+        Create/update handler for recipes with dynamic nested lists.
+
+        Accepts ingredients as [{ingredient_id|name, quantity, unit}] and
+        steps as [{step_number, instruction, image}]. Images are optional
+        extra gallery images and are replaced on each update.
+      properties:
+        title:
+          type: string
+          minLength: 1
+          maxLength: 200
+        description:
+          type: string
+        category_id:
+          type: integer
+          writeOnly: true
+          nullable: true
+        cooking_time:
+          type: integer
+          maximum: 9223372036854775807
+          minimum: 0
+          format: int64
+          description: Cooking time in minutes
+        prep_time:
+          type: integer
+          maximum: 9223372036854775807
+          minimum: 0
+          format: int64
+          description: Prep time in minutes
+        servings:
+          type: integer
+          maximum: 9223372036854775807
+          minimum: 0
+          format: int64
+        difficulty:
+          $ref: '#/components/schemas/DifficultyEnum'
+        status:
+          allOf:
+          - $ref: '#/components/schemas/StatusEnum'
+          default: published
+        calories:
+          type: integer
+          maximum: 9223372036854775807
+          minimum: 0
+          format: int64
+          nullable: true
+        protein:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,5}(?:\.\d{0,1})?$
+          nullable: true
+          description: grams
+        carbs:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,5}(?:\.\d{0,1})?$
+          nullable: true
+          description: grams
+        fat:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,5}(?:\.\d{0,1})?$
+          nullable: true
+          description: grams
+        ingredients:
+          type: array
+          items:
+            $ref: '#/components/schemas/IngredientInputRequest'
+          writeOnly: true
+        steps:
+          type: array
+          items:
+            $ref: '#/components/schemas/StepInputRequest'
+          writeOnly: true
+        extra_images:
+          type: array
+          items:
+            type: string
+            format: binary
+          writeOnly: true
+      required:
+      - cooking_time
+      - title
+    Register:
+      type: object
+      properties:
+        name:
+          type: string
+          maxLength: 150
+        email:
+          type: string
+          format: email
+      required:
+      - email
+    RegisterRequest:
+      type: object
+      properties:
+        name:
+          type: string
+          maxLength: 150
+        email:
+          type: string
+          format: email
+          minLength: 1
+        password:
+          type: string
+          writeOnly: true
+          minLength: 1
+          maxLength: 128
+        password2:
+          type: string
+          writeOnly: true
+          minLength: 1
+          maxLength: 128
+      required:
+      - email
+      - password
+      - password2
+    Report:
+      type: object
+      description: Report a recipe or a review for moderation.
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        reason:
+          type: string
+          maxLength: 200
+        detail:
+          type: string
+        status:
+          type: string
+          readOnly: true
+        reported_by:
+          type: string
+          readOnly: true
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - created_at
+      - id
+      - reason
+      - reported_by
+      - status
+    ReportRequest:
+      type: object
+      description: Report a recipe or a review for moderation.
+      properties:
+        reason:
+          type: string
+          minLength: 1
+          maxLength: 200
+        detail:
+          type: string
+        content_type:
+          allOf:
+          - $ref: '#/components/schemas/ContentTypeEnum'
+          writeOnly: true
+        object_id:
+          type: integer
+          writeOnly: true
+      required:
+      - content_type
+      - object_id
+      - reason
+    Review:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        rating:
+          allOf:
+          - $ref: '#/components/schemas/RatingEnum'
+          minimum: 0
+          maximum: 9223372036854775807
+        comment:
+          type: string
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        updated_at:
+          type: string
+          format: date-time
+          readOnly: true
+        user:
+          allOf:
+          - $ref: '#/components/schemas/ReviewUser'
+          readOnly: true
+      required:
+      - created_at
+      - id
+      - rating
+      - updated_at
+      - user
+    ReviewRequest:
+      type: object
+      properties:
+        recipe_id:
+          type: integer
+          writeOnly: true
+        rating:
+          allOf:
+          - $ref: '#/components/schemas/RatingEnum'
+          minimum: 0
+          maximum: 9223372036854775807
+        comment:
+          type: string
+      required:
+      - rating
+      - recipe_id
+    ReviewUser:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        name:
+          type: string
+          readOnly: true
+        avatar:
+          type: string
+          readOnly: true
+      required:
+      - avatar
+      - id
+      - name
+    ShoppingListItem:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        name:
+          type: string
+          maxLength: 150
+        ingredient_id:
+          type: integer
+          nullable: true
+          readOnly: true
+        quantity:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,6}(?:\.\d{0,2})?$
+        unit:
+          $ref: '#/components/schemas/UnitEnum'
+        category:
+          type: string
+          readOnly: true
+        is_completed:
+          type: boolean
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - category
+      - created_at
+      - id
+      - ingredient_id
+      - name
+      - quantity
+    ShoppingListItemRequest:
+      type: object
+      properties:
+        name:
+          type: string
+          minLength: 1
+          maxLength: 150
+        quantity:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,6}(?:\.\d{0,2})?$
+        unit:
+          $ref: '#/components/schemas/UnitEnum'
+        is_completed:
+          type: boolean
+      required:
+      - name
+      - quantity
+    StatusEnum:
+      enum:
+      - draft
+      - pending
+      - published
+      - rejected
+      type: string
+      description: |-
+        * `draft` - Draft
+        * `pending` - Pending review
+        * `published` - Published
+        * `rejected` - Rejected
+    StepInput:
+      type: object
+      properties:
+        step_number:
+          type: integer
+          minimum: 1
+        instruction:
+          type: string
+        image:
+          type: string
+          format: uri
+          nullable: true
+      required:
+      - instruction
+      - step_number
+    StepInputRequest:
+      type: object
+      properties:
+        step_number:
+          type: integer
+          minimum: 1
+        instruction:
+          type: string
+          minLength: 1
+        image:
+          type: string
+          format: binary
+          nullable: true
+      required:
+      - instruction
+      - step_number
+    TokenVerifyRequest:
+      type: object
+      properties:
+        token:
+          type: string
+          writeOnly: true
+          minLength: 1
+      required:
+      - token
+    UnitEnum:
+      enum:
+      - g
+      - kg
+      - ml
+      - l
+      - pcs
+      - tbsp
+      - tsp
+      - cup
+      - clove
+      - bunch
+      - pinch
+      - slice
+      - pack
+      - can
+      type: string
+      description: |-
+        * `g` - g
+        * `kg` - kg
+        * `ml` - ml
+        * `l` - l
+        * `pcs` - pcs
+        * `tbsp` - tbsp
+        * `tsp` - tsp
+        * `cup` - cup
+        * `clove` - clove
+        * `bunch` - bunch
+        * `pinch` - pinch
+        * `slice` - slice
+        * `pack` - pack
+        * `can` - can
+    User:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        email:
+          type: string
+          format: email
+          readOnly: true
+        name:
+          type: string
+          maxLength: 150
+        display_name:
+          type: string
+          readOnly: true
+        avatar:
+          type: string
+          readOnly: true
+        bio:
+          type: string
+        date_joined:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - avatar
+      - date_joined
+      - display_name
+      - email
+      - id
+    UserRequest:
+      type: object
+      properties:
+        name:
+          type: string
+          maxLength: 150
+        bio:
+          type: string

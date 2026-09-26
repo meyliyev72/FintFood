@@ -5,13 +5,16 @@ from django.core.mail import send_mail
 from django.utils.encoding import force_bytes, force_str
 from django.utils.http import urlsafe_base64_decode, urlsafe_base64_encode
 
-from rest_framework import status
+from drf_spectacular.utils import OpenApiResponse, extend_schema, inline_serializer
+from rest_framework import serializers, status
 from rest_framework.generics import GenericAPIView, RetrieveUpdateAPIView
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework_simplejwt.exceptions import InvalidToken, TokenError
 from rest_framework_simplejwt.tokens import RefreshToken
+
+from apps.core.i18n import SUPPORTED_LANGUAGES, normalize_language
 
 from .authentication import clear_auth_cookies, set_auth_cookies
 from .serializers import (
@@ -24,6 +27,17 @@ from .serializers import (
 )
 
 User = get_user_model()
+
+#: Minimal response shapes so drf-spectacular can document these endpoints.
+AuthResponseSerializer = inline_serializer(
+    name="AuthResponse", fields={"user": UserSerializer()}
+)
+DetailResponseSerializer = inline_serializer(
+    name="DetailResponse", fields={"detail": serializers.CharField()}
+)
+RefreshRequestSerializer = inline_serializer(
+    name="RefreshRequest", fields={"refresh": serializers.CharField(required=False)}
+)
 
 
 def _token_pair_for(user):
@@ -48,6 +62,11 @@ class RegisterView(BaseAuthView):
     serializer_class = RegisterSerializer
     throttle_scope = "auth"
 
+    @extend_schema(
+        request=RegisterSerializer,
+        responses={201: AuthResponseSerializer},
+        summary="Create an account and sign in",
+    )
     def post(self, request, *args, **kwargs):
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
@@ -60,6 +79,11 @@ class LoginView(BaseAuthView):
     serializer_class = LoginSerializer
     throttle_scope = "auth"
 
+    @extend_schema(
+        request=LoginSerializer,
+        responses={200: AuthResponseSerializer},
+        summary="Sign in with email and password",
+    )
     def post(self, request, *args, **kwargs):
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
@@ -73,6 +97,18 @@ class RefreshView(APIView):
     permission_classes = [AllowAny]
     authentication_classes = []
 
+    @extend_schema(
+        request=RefreshRequestSerializer,
+        responses={
+            200: DetailResponseSerializer,
+            401: OpenApiResponse(DetailResponseSerializer),
+        },
+        summary="Rotate the JWT refresh cookie",
+        description=(
+            "Reads the httpOnly `refresh_token` cookie, rotates it and re-issues "
+            "both auth cookies. The frontend calls this automatically once on a 401."
+        ),
+    )
     def post(self, request):
         refresh_token = request.COOKIES.get(settings.SIMPLE_JWT["REFRESH_COOKIE"])
         if not refresh_token:
@@ -99,6 +135,11 @@ class RefreshView(APIView):
 class LogoutView(APIView):
     permission_classes = [IsAuthenticated]
 
+    @extend_schema(
+        request=None,
+        responses={200: DetailResponseSerializer},
+        summary="Blacklist the refresh token and clear cookies",
+    )
     def post(self, request):
         refresh_token = request.COOKIES.get(settings.SIMPLE_JWT["REFRESH_COOKIE"])
         if refresh_token:
@@ -129,6 +170,12 @@ class MeView(RetrieveUpdateAPIView):
 class PasswordChangeView(APIView):
     permission_classes = [IsAuthenticated]
 
+    @extend_schema(
+        request=PasswordChangeSerializer,
+        responses={200: DetailResponseSerializer},
+        summary="Change the signed-in user's password",
+        description="Clears the auth cookies on success so the user signs in again.",
+    )
     def post(self, request):
         serializer = PasswordChangeSerializer(
             data=request.data, context={"request": request}
@@ -143,16 +190,27 @@ class PasswordResetRequestView(APIView):
     permission_classes = [AllowAny]
     throttle_scope = "password_reset"
 
+    @extend_schema(
+        request=PasswordResetRequestSerializer,
+        responses={200: DetailResponseSerializer},
+        summary="Email a password reset link",
+        description=(
+            "Always returns 200 so the endpoint cannot be used to discover which "
+            "email addresses are registered. The reset link points at the "
+            "locale-prefixed frontend route."
+        ),
+    )
     def post(self, request):
         serializer = PasswordResetRequestSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         email = serializer.validated_data["email"].strip().lower()
+        locale = normalize_language(serializer.validated_data.get("locale"))
         user = User.objects.filter(email__iexact=email).first()
 
         if user is not None:
             uid = urlsafe_base64_encode(force_bytes(user.pk))
             token = default_token_generator.make_token(user)
-            link = f"{settings.FRONTEND_URL}/reset-password/?uid={uid}&token={token}"
+            link = f"{settings.FRONTEND_URL}/{locale}/reset-password/?uid={uid}&token={token}"
             send_mail(
                 subject="Reset your FintFood password",
                 message=(
@@ -170,6 +228,14 @@ class PasswordResetRequestView(APIView):
 class PasswordResetConfirmView(APIView):
     permission_classes = [AllowAny]
 
+    @extend_schema(
+        request=PasswordResetConfirmSerializer,
+        responses={
+            200: DetailResponseSerializer,
+            400: OpenApiResponse(DetailResponseSerializer),
+        },
+        summary="Set a new password using uid + token",
+    )
     def post(self, request):
         serializer = PasswordResetConfirmSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)

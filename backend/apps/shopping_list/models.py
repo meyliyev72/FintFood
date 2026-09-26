@@ -3,6 +3,20 @@ from django.db import models
 
 from apps.core.models import Unit
 
+#: Fallback labels for shopping-list rows that have no ingredient FK.
+_FALLBACK_CATEGORY_LABELS = {
+    "other": {"uz": "Boshqa", "ru": "Другое", "en": "Other"},
+}
+
+
+def localized_name_for_slug(slug: str, language: str) -> str:
+    """Label for a grouping key with no FK, in the active language."""
+    labels = _FALLBACK_CATEGORY_LABELS.get(slug)
+    if not labels:
+        return slug.replace("-", " ").title()
+    return labels.get(language) or labels["en"]
+
+
 
 class ShoppingListItem(models.Model):
     user = models.ForeignKey(
@@ -41,6 +55,14 @@ class ShoppingListItem(models.Model):
         if self.ingredient_id and self.ingredient.category_id:
             return self.ingredient.category.name
         return "Other"
+
+    def category_name_for(self, language: str) -> str:
+        """Localized grouping label; falls back to "Other" for free-text rows."""
+        from apps.core.i18n import localized
+
+        if self.ingredient_id and self.ingredient.category_id:
+            return localized(self.ingredient.category, "name", language)
+        return localized_name_for_slug("other", language)
 
     @property
     def unit_display(self) -> str:

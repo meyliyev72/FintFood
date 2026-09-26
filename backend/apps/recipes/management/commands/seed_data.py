@@ -26,9 +26,23 @@ from apps.recipes.seed_content import (
     REVIEW_COMMENTS,
     SEED_USERS,
 )
+from apps.recipes.seed_translations import (
+    CATEGORY_TRANSLATIONS,
+    INGREDIENT_CATEGORY_TRANSLATIONS,
+    INGREDIENT_TRANSLATIONS,
+)
 from apps.reviews.models import Review
 
 IMAGE_PLACEHOLDER = "https://picsum.photos/seed/fintfood-{slug}/1200/800"
+
+#: (uz, ru, en) tuple positions, matching apps.core.i18n.SUPPORTED_LANGUAGES.
+_UZ, _RU, _EN = 0, 1, 2
+
+
+def _translations(entry):
+    """Split a (uz, ru, en) tuple into the three model columns."""
+    uz, ru, en = entry
+    return {"name_uz": uz, "name_ru": ru, "name_en": en}
 
 
 class Command(BaseCommand):
@@ -77,33 +91,59 @@ class Command(BaseCommand):
         self.stdout.write(f"Users: {User.objects.count()}")
 
     def _seed_ingredient_categories(self):
-        existing = set(IngredientCategory.objects.values_list("slug", flat=True))
+        """Create/refresh ingredient categories with uz/ru/en labels."""
         for name in INGREDIENT_CATEGORIES:
             slug = slugify(name)
-            if slug in existing:
-                continue
-            IngredientCategory.objects.create(name=name, slug=slug)
+            labels = INGREDIENT_CATEGORY_TRANSLATIONS.get(name)
+            defaults = {"name": name, **_translations(labels)} if labels else {"name": name}
+            IngredientCategory.objects.update_or_create(
+                slug=slug, defaults={"name": name, **defaults}
+            )
 
     def _seed_categories(self):
-        existing = set(Category.objects.values_list("slug", flat=True))
+        """Create/refresh recipe categories with uz/ru/en names + descriptions."""
         for name, description in CATEGORIES:
             slug = slugify(name)
-            if slug in existing:
-                continue
-            Category.objects.create(name=name, slug=slug, description=description)
+            entry = CATEGORY_TRANSLATIONS.get(name, {})
+            labels = entry.get("name")
+            desc = entry.get("description")
+            Category.objects.update_or_create(
+                slug=slug,
+                defaults={
+                    "name": name,
+                    "description": description,
+                    **(_translations(labels) if labels else {}),
+                    **(
+                        {
+                            "description_uz": desc[_UZ],
+                            "description_ru": desc[_RU],
+                            "description_en": desc[_EN],
+                        }
+                        if desc
+                        else {}
+                    ),
+                },
+            )
         self.stdout.write(f"Categories: {Category.objects.count()}")
 
     def _seed_ingredients(self):
-        by_name = {i.name.lower(): i for i in Ingredient.objects.all()}
+        """Create/refresh ingredients with uz/ru/en labels."""
         categories = {c.slug: c for c in IngredientCategory.objects.all()}
         created = 0
         for name, cat_slug in INGREDIENTS.items():
-            if name.lower() in by_name:
+            category = categories.get(cat_slug)
+            if category is None:
                 continue
-            Ingredient.objects.create(
-                name=name, category=categories[cat_slug], slug=slugify(name)
+            labels = INGREDIENT_TRANSLATIONS.get(name)
+            _, was_created = Ingredient.objects.update_or_create(
+                name=name,
+                defaults={
+                    "category": category,
+                    "slug": slugify(name),
+                    **(_translations(labels) if labels else {}),
+                },
             )
-            created += 1
+            created += int(was_created)
         self.stdout.write(f"Ingredients: {Ingredient.objects.count()} ({created} new)")
 
     def _seed_recipes(self):

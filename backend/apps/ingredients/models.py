@@ -1,10 +1,11 @@
 from django.db import models
 from django.utils.text import slugify
 
+from apps.categories.models import TranslatedNameMixin
 from apps.core.models import SluggedModel, TimeStampedModel
 
 
-class IngredientCategory(TimeStampedModel, SluggedModel):
+class IngredientCategory(TimeStampedModel, SluggedModel, TranslatedNameMixin):
     name = models.CharField(max_length=100)
     description = models.TextField(blank=True)
 
@@ -16,7 +17,7 @@ class IngredientCategory(TimeStampedModel, SluggedModel):
         return self.name
 
 
-class Ingredient(TimeStampedModel, SluggedModel):
+class Ingredient(TimeStampedModel, SluggedModel, TranslatedNameMixin):
     name = models.CharField(max_length=120, db_index=True)
     category = models.ForeignKey(
         IngredientCategory,
