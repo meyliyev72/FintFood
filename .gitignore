@@ -35,3 +35,5 @@ Thumbs.db
 .pytest_cache/
 .coverage
 htmlcov/
+# drf-spectacular local output
+schema_tmp.yaml
