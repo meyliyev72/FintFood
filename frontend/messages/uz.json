@@ -297,6 +297,7 @@
     "account": "Hisob",
     "language": "Til",
     "social": "Kuzatish",
+    "socialPlaceholder": "{network} (tez orada)",
     "rights": "© {year} FintFood. Barcha huquqlar himoyalangan.",
     "tagline": "Bor nangiz bilan pishiring."
   }

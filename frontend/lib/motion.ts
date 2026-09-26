@@ -9,6 +9,8 @@
  * `page`, no distance may exceed `medium`, and no scale may exceed 1.05.
  */
 
+import type { Transition } from "framer-motion";
+
 export const durations = {
   instant: 0.1,
   fast: 0.15,
@@ -24,7 +26,7 @@ export const easings = {
 } as const;
 
 /** §22.1 spring, used for hearts, chips and shared-element layout moves. */
-export const spring = { type: "spring", stiffness: 400, damping: 30 } as const;
+export const spring: Transition = { type: "spring", stiffness: 400, damping: 30 };
 
 /** §22.1 distances. `medium` is the ceiling for entrance travel. */
 export const distances = {
@@ -102,7 +104,7 @@ export const sectionInView = {
 } as const;
 
 /** Chips animating between the picker grid and the selected bar. */
-export const chipSpring = { layout: true, transition: spring } as const;
+export const chipSpring = { layout: true, transition: spring };
 
 /**
  * Every `while*` prop should be paired with these so Framer Motion honours

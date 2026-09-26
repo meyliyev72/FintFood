@@ -25,10 +25,13 @@ class IngredientSerializer(serializers.ModelSerializer):
     )
     name = serializers.SerializerMethodField()
     name_en = serializers.CharField(read_only=True)
+    # Annotation from `IngredientListView`, not a model field.
+    usage_count = serializers.IntegerField(read_only=True, required=False)
 
     class Meta:
         model = Ingredient
-        fields = ["id", "name", "name_en", "slug", "category", "category_id"]
+        fields = ["id", "name", "name_en", "slug", "category", "category_id", "usage_count"]
+        read_only_fields = ["usage_count"]
 
     def get_name(self, obj) -> str:
         return localized(obj, "name", get_request_language(self.context.get("request")))

@@ -78,6 +78,8 @@ export interface Ingredient {
   slug: string;
   category: IngredientCategory | null;
   category_id?: number | null;
+  /** Published recipes using this ingredient; ranks the home page chips. */
+  usage_count?: number;
 }
 
 export interface RecipeIngredient {
@@ -233,7 +235,7 @@ export type RecipeFilters = {
   max_time?: number;
   time_range?: TimeRange;
   diet?: Diet;
-  ordering?: string;
+  ordering?: RecipeOrdering;
   page?: number;
   page_size?: number;
 };
@@ -247,7 +249,23 @@ export type RecipeFilters = {
 
 const DIFFICULTIES = ["easy", "medium", "hard"] as const satisfies readonly Difficulty[];
 const TIME_RANGES = ["under-15", "15-30", "30-60", "60+"] as const satisfies readonly TimeRange[];
-const DIETS = ["vegetarian", "healthy", "high-protein"] as const satisfies readonly Diet[];
+const DIET_OPTIONS = ["vegetarian", "healthy", "high-protein"] as const satisfies readonly Diet[];
+
+/** Whitelisted `ordering` values, mirroring `RecipeViewSet.ordering_fields`. */
+const ORDERINGS = [
+  "avg_rating",
+  "-avg_rating",
+  "created_at",
+  "-created_at",
+  "total_time",
+  "-total_time",
+  "title",
+  "-title",
+  "review_count",
+  "-review_count",
+] as const;
+
+export type RecipeOrdering = (typeof ORDERINGS)[number];
 
 function oneOf<T extends string>(values: readonly T[], value: string | undefined | null): T | undefined {
   return values.find((candidate) => candidate === value);
@@ -260,7 +278,7 @@ export const isTimeRange = (value: unknown): value is TimeRange =>
   typeof value === "string" && oneOf(TIME_RANGES, value) !== undefined;
 
 export const isDiet = (value: unknown): value is Diet =>
-  typeof value === "string" && oneOf(DIETS, value) !== undefined;
+  typeof value === "string" && oneOf(DIET_OPTIONS, value) !== undefined;
 
 /** Reads a single, validated recipe filter out of a URLSearchParams. */
 export function readRecipeFilters(params: URLSearchParams): RecipeFilters {
@@ -269,8 +287,9 @@ export function readRecipeFilters(params: URLSearchParams): RecipeFilters {
     category: params.get("category") || undefined,
     difficulty: oneOf(DIFFICULTIES, params.get("difficulty")),
     time_range: oneOf(TIME_RANGES, params.get("time_range")),
-    diet: oneOf(DIETS, params.get("diet")),
+    diet: oneOf(DIET_OPTIONS, params.get("diet")),
     query: params.get("query") || undefined,
+    ordering: oneOf(ORDERINGS, params.get("ordering")),
     page: Number.isInteger(page) && page > 0 ? page : undefined,
   };
 }

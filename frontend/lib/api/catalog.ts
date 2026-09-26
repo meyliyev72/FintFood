@@ -1,7 +1,7 @@
 import { api, type RequestOptions } from "./client";
 import type { Category, Ingredient, IngredientCategory } from "@/types";
 
-type Ctx = Pick<RequestOptions, "locale" | "signal">;
+type Ctx = Pick<RequestOptions, "locale" | "signal" | "next">;
 
 /** Category list/detail. These endpoints are unpaginated. */
 export const categoriesApi = {

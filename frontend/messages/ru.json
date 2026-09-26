@@ -297,6 +297,7 @@
     "account": "Аккаунт",
     "language": "Язык",
     "social": "Мы в соцсетях",
+    "socialPlaceholder": "{network} (скоро)",
     "rights": "© {year} FintFood. Все права защищены.",
     "tagline": "Готовьте из того, что есть."
   }

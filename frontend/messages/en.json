@@ -298,6 +298,7 @@
     "account": "Account",
     "language": "Language",
     "social": "Follow",
+    "socialPlaceholder": "{network} (coming soon)",
     "rights": "© {year} FintFood. All rights reserved.",
     "tagline": "Cook with what you have."
   }
