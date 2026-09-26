@@ -168,16 +168,22 @@
   /* ---- Motion tokens (§22.1) ---------------------------------------------
      Durations and easings live here so the whole app animates on one
      rhythm. `lib/motion.ts` reads the same names for Framer Motion. */
-  --duration-instant: 120ms;
-  --duration-fast: 180ms;
-  --duration-base: 240ms;
-  --duration-slow: 380ms;
-  --duration-slower: 560ms;
+  --duration-instant: 100ms;
+  --duration-fast: 150ms;
+  --duration-base: 220ms;
+  --duration-slow: 350ms;
+  --duration-page: 400ms;
 
-  --ease-standard: cubic-bezier(0.2, 0, 0, 1);
+  --ease-standard: cubic-bezier(0.4, 0, 0.2, 1);
   --ease-entrance: cubic-bezier(0.16, 1, 0.3, 1);
   --ease-exit: cubic-bezier(0.4, 0, 1, 1);
-  --ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
+
+  /* Framer Motion spring (§22.1) has no CSS counterpart; it lives in
+     `lib/motion.ts` as { stiffness: 400, damping: 30 }. */
+
+  --distance-micro: 2px;
+  --distance-small: 8px;
+  --distance-medium: 16px;
 }
 
 /* ==========================================================================

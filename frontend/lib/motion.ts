@@ -4,21 +4,33 @@
  * Single source of truth shared by the CSS custom properties in
  * `app/globals.css` and the Framer Motion transitions below, so CSS-only
  * animations and JS animations stay on the same rhythm.
+ *
+ * Hard limits (§22.3) are encoded in the types below: no duration may exceed
+ * `page`, no distance may exceed `medium`, and no scale may exceed 1.05.
  */
 
 export const durations = {
-  instant: 0.12,
-  fast: 0.18,
-  base: 0.24,
-  slow: 0.38,
-  slower: 0.56,
+  instant: 0.1,
+  fast: 0.15,
+  base: 0.22,
+  slow: 0.35,
+  page: 0.4,
 } as const;
 
 export const easings = {
-  standard: [0.2, 0, 0, 1],
+  standard: [0.4, 0, 0.2, 1],
   entrance: [0.16, 1, 0.3, 1],
   exit: [0.4, 0, 1, 1],
-  spring: [0.34, 1.56, 0.64, 1],
+} as const;
+
+/** §22.1 spring, used for hearts, chips and shared-element layout moves. */
+export const spring = { type: "spring", stiffness: 400, damping: 30 } as const;
+
+/** §22.1 distances. `medium` is the ceiling for entrance travel. */
+export const distances = {
+  micro: 2,
+  small: 8,
+  medium: 16,
 } as const;
 
 export type Duration = keyof typeof durations;
@@ -31,10 +43,10 @@ export function transition(duration: Duration = "base", easing: Easing = "standa
 
 /** Page/route entrance: content rises and fades in. */
 export const fadeUp = {
-  initial: { opacity: 0, y: 12 },
+  initial: { opacity: 0, y: distances.small },
   animate: { opacity: 1, y: 0 },
-  exit: { opacity: 0, y: -8 },
-  transition: transition("base", "entrance"),
+  exit: { opacity: 0, y: -distances.small },
+  transition: transition("page", "entrance"),
 };
 
 /** Pure fade, for overlays and cross-fades. */
@@ -45,38 +57,52 @@ export const fadeIn = {
   transition: transition("fast", "standard"),
 };
 
-/** Modal / bottom-sheet: scales up from slightly below. */
+/** Dialog / bottom-sheet panel: scales up from slightly below. */
 export const sheetIn = {
-  initial: { opacity: 0, y: 24, scale: 0.98 },
+  initial: { opacity: 0, y: distances.medium, scale: 0.96 },
   animate: { opacity: 1, y: 0, scale: 1 },
-  exit: { opacity: 0, y: 16, scale: 0.98 },
+  exit: { opacity: 0, y: distances.medium, scale: 0.96 },
   transition: transition("base", "entrance"),
 };
 
-/** Small scale-in for cards, chips and popovers. */
+/** Small scale-in for menus, popovers and chips. */
 export const popIn = {
-  initial: { opacity: 0, scale: 0.96 },
-  animate: { opacity: 1, scale: 1 },
-  exit: { opacity: 0, scale: 0.97 },
+  initial: { opacity: 0, scale: 0.96, y: -4 },
+  animate: { opacity: 1, scale: 1, y: 0 },
+  exit: { opacity: 0, scale: 0.96, y: -4 },
   transition: transition("fast", "entrance"),
 };
 
-/** Staggered container: children animate in sequence. */
+/**
+ * Staggered container: children animate in sequence, 40ms apart, capped at
+ * the first 8 items so long lists never feel sluggish (§22.2).
+ */
 export const staggerContainer = {
-  animate: { transition: { staggerChildren: 0.045, delayChildren: 0.02 } },
+  animate: { transition: { staggerChildren: 0.04, delayChildren: 0.02 } },
 };
 
 /** Item inside a `staggerContainer` group. */
 export const staggerItem = {
-  initial: { opacity: 0, y: 10 },
-  animate: { opacity: 1, y: 0,  transition: transition("base", "entrance") },
+  initial: { opacity: 0, y: distances.medium },
+  animate: { opacity: 1, y: 0, transition: transition("slow", "entrance") },
 };
 
-/** Card hover: a small lift plus a shadow bloom. */
+/** Card hover: a 4px lift plus a shadow bloom. */
 export const cardHover = {
-  rest: { y: 0, transition: transition("fast", "standard") },
-  hover: { y: -4, transition: transition("fast", "spring") },
+  rest: { y: 0, transition: transition("base", "standard") },
+  hover: { y: -4, transition: transition("base", "standard") },
 };
+
+/** Section entrance, triggered once at 15% visibility (§22.2). */
+export const sectionInView = {
+  initial: { opacity: 0, y: distances.medium },
+  whileInView: { opacity: 1, y: 0 },
+  viewport: { once: true, amount: 0.15 },
+  transition: transition("slow", "entrance"),
+} as const;
+
+/** Chips animating between the picker grid and the selected bar. */
+export const chipSpring = { layout: true, transition: spring } as const;
 
 /**
  * Every `while*` prop should be paired with these so Framer Motion honours
@@ -85,6 +111,6 @@ export const cardHover = {
  */
 export const reducedMotion = {
   initial: { opacity: 0 },
-  animate: { opacity: 1, transition: { duration: 0.01 } },
-  exit: { opacity: 0, transition: { duration: 0.01 } },
+  animate: { opacity: 1, transition: { duration: 0.1 } },
+  exit: { opacity: 0, transition: { duration: 0.1 } },
 };

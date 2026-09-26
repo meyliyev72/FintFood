@@ -98,7 +98,12 @@
     "emptyHint": "Bitta filtrni olib tashlab koʻring yoki boshqa soʻz bilan qidiring.",
     "loadMore": "Yana koʻrsatish",
     "resultCount": "{count, plural, =0 {Retsept yoʻq} one {# ta retsept} other {# ta retsept}}",
-    "activeFilters": "Faol filtrlar"
+    "activeFilters": "Faol filtrlar",
+    "pagination": "Sahifalash",
+    "previousPage": "Oldingi sahifa",
+    "nextPage": "Keyingi sahifa",
+    "goToPage": "{page}-sahifaga o'tish",
+    "clearSearch": "Qidiruvni tozalash"
   },
   "filter": {
     "category": "Kategoriya",

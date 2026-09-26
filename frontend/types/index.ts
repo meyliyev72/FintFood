@@ -15,8 +15,15 @@ export type Locale = "uz" | "ru" | "en";
 
 export type Difficulty = "easy" | "medium" | "hard";
 
-/** Matches `Unit` in backend/apps/recipes/models.py. */
+/** Raw `Unit` values accepted by the API on write. */
 export type Unit = "g" | "kg" | "ml" | "l" | "pcs" | "tbsp" | "tsp";
+
+/**
+ * A unit as returned by read endpoints: already translated by the API via
+ * `localized_choice("unit", ...)` and therefore a display label, not a raw
+ * value (e.g. "шт" for "pcs").
+ */
+export type UnitLabel = string;
 
 /** Matches `RecipeStatus` in backend/apps/recipes/models.py. */
 export type RecipeStatus = "draft" | "pending" | "published" | "rejected";
@@ -79,7 +86,8 @@ export interface RecipeIngredient {
   slug: string;
   category: string | null;
   quantity: string;
-  unit: Unit;
+  /** Pre-localized display label, not a raw `Unit`. */
+  unit: UnitLabel;
 }
 
 export interface InstructionStep {
@@ -106,7 +114,7 @@ export interface Recipe {
   prep_time: number;
   total_time: number;
   servings: number;
-  /** Translated server-side via `get_difficulty_display`. */
+  /** Translated server-side via `localized_choice("difficulty", ...)`. */
   difficulty: string;
   average_rating: number | null;
   review_count: number;
@@ -133,7 +141,7 @@ export interface MatchedIngredient {
 
 export interface MissingIngredient extends MatchedIngredient {
   quantity: string;
-  unit: Unit;
+  unit: UnitLabel;
 }
 
 export interface RecipeMatch extends Recipe {
@@ -187,7 +195,8 @@ export interface ShoppingListItem {
   name: string;
   ingredient_id: number | null;
   quantity: string;
-  unit: Unit;
+  /** Pre-localized display label, not a raw `Unit`. */
+  unit: UnitLabel;
   /** Localized server-side; falls back to a section header for free-text items. */
   category: string;
   is_completed: boolean;
@@ -211,8 +220,13 @@ export interface AuthResponse {
   user: User;
 }
 
-/** Query params accepted by GET /recipes/. */
-export interface RecipeFilters {
+/**
+ * Query params accepted by GET /recipes/.
+ *
+ * Declared as a type alias rather than an interface so it satisfies
+ * `Record<string, unknown>` and can be used directly as a React Query key.
+ */
+export type RecipeFilters = {
   category?: string;
   difficulty?: Difficulty;
   query?: string;
@@ -222,6 +236,43 @@ export interface RecipeFilters {
   ordering?: string;
   page?: number;
   page_size?: number;
+};
+
+/* -------------------------------------------------------------------------
+ * Guards for URL-sourced values.
+ *
+ * Filter values come from the query string, so they must be validated before
+ * they reach the API — a cast would let `?difficulty=bogus` through.
+ * ---------------------------------------------------------------------- */
+
+const DIFFICULTIES = ["easy", "medium", "hard"] as const satisfies readonly Difficulty[];
+const TIME_RANGES = ["under-15", "15-30", "30-60", "60+"] as const satisfies readonly TimeRange[];
+const DIETS = ["vegetarian", "healthy", "high-protein"] as const satisfies readonly Diet[];
+
+function oneOf<T extends string>(values: readonly T[], value: string | undefined | null): T | undefined {
+  return values.find((candidate) => candidate === value);
+}
+
+export const isDifficulty = (value: unknown): value is Difficulty =>
+  typeof value === "string" && oneOf(DIFFICULTIES, value) !== undefined;
+
+export const isTimeRange = (value: unknown): value is TimeRange =>
+  typeof value === "string" && oneOf(TIME_RANGES, value) !== undefined;
+
+export const isDiet = (value: unknown): value is Diet =>
+  typeof value === "string" && oneOf(DIETS, value) !== undefined;
+
+/** Reads a single, validated recipe filter out of a URLSearchParams. */
+export function readRecipeFilters(params: URLSearchParams): RecipeFilters {
+  const page = Number(params.get("page"));
+  return {
+    category: params.get("category") || undefined,
+    difficulty: oneOf(DIFFICULTIES, params.get("difficulty")),
+    time_range: oneOf(TIME_RANGES, params.get("time_range")),
+    diet: oneOf(DIETS, params.get("diet")),
+    query: params.get("query") || undefined,
+    page: Number.isInteger(page) && page > 0 ? page : undefined,
+  };
 }
 
 export interface DeleteResponse {

@@ -196,6 +196,32 @@ class RecipeSearchAndFilterTests(APITestCase):
         self.assertEqual(resp.data["count"], 1)
         self.assertEqual(resp.data["results"][0]["slug"], self.omlette.slug)
 
+    def test_search_matches_localized_category_name(self):
+        """§19 + §3.3: filters and search must read naturally in all three languages."""
+        self.breakfast.name_uz = "Nonushta"
+        self.breakfast.name_ru = "Zavtrak"
+        self.breakfast.save(update_fields=["name_uz", "name_ru"])
+
+        for term in ("nonushta", "zavtrak", "breakfast"):
+            with self.subTest(term=term):
+                resp = self.client.get(f"/api/v1/recipes/?query={term}")
+                self.assertEqual(resp.data["count"], 1)
+                self.assertEqual(resp.data["results"][0]["slug"], self.omlette.slug)
+
+    def test_search_matches_localized_ingredient_name(self):
+        self.parsley.name_uz = "Petrushka"
+        self.parsley.save(update_fields=["name_uz"])
+        recipe = make_recipe(
+            self.author,
+            title="Fresh herb salad",
+            ingredients=("Parsley",),
+            category=self.dinner,
+            status=RecipeStatus.PUBLISHED,
+        )
+
+        resp = self.client.get("/api/v1/recipes/?query=petrushka")
+        self.assertEqual([row["slug"] for row in resp.data["results"]], [recipe.slug])
+
     def test_query_filter_combines_fields(self):
         resp = self.client.get("/api/v1/recipes/?query=plov")
         self.assertEqual(resp.data["count"], 1)

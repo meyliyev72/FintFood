@@ -98,7 +98,12 @@
     "emptyHint": "Уберите один фильтр или измените запрос.",
     "loadMore": "Показать ещё",
     "resultCount": "{count, plural, =0 {Нет рецептов} one {# рецепт} few {# рецепта} other {# рецептов}}",
-    "activeFilters": "Активные фильтры"
+    "activeFilters": "Активные фильтры",
+    "pagination": "Постраничная навигация",
+    "previousPage": "Предыдущая страница",
+    "nextPage": "Следующая страница",
+    "goToPage": "Перейти на страницу {page}",
+    "clearSearch": "Очистить поиск"
   },
   "filter": {
     "category": "Категория",

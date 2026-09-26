@@ -7,7 +7,7 @@
 export const queryKeys = {
   session: ["session"] as const,
 
-  recipes: (filters: Record<string, unknown>) => ["recipes", "list", filters] as const,
+  recipes: (filters: Readonly<object>) => ["recipes", "list", filters] as const,
   recipe: (slug: string) => ["recipes", "detail", slug] as const,
   myRecipes: (page: number) => ["recipes", "mine", page] as const,
   recentlyViewed: ["recipes", "recently-viewed"] as const,

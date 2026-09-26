@@ -6,10 +6,18 @@ import Image from "next/image";
 import { memo } from "react";
 
 import { Badge } from "@/components/ui";
+import { FavoriteButton } from "@/components/recipe/favorite-button";
 import { Link } from "@/i18n/navigation";
 import { mediaUrl } from "@/lib/api/client";
 import { cn } from "@/lib/utils";
 import type { Recipe } from "@/types";
+
+/**
+ * Tiny cream-toned base64 image used as the `blur` placeholder so cards paint
+ * instantly while the real cover streams in (§3.2).
+ */
+const BLUR_PLACEHOLDER =
+  "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI0MCIgaGVpZ2h0PSIzMCI+PHJlY3Qgd2lkdGg9IjQwIiBoZWlnaHQ9IjMwIiBmaWxsPSIjRURDR0ZFIi8+PC9zdmc+";
 
 /**
  * Recipe card used in every grid.
@@ -31,7 +39,6 @@ export const RecipeCard = memo(function RecipeCard({
   matchPercentage?: number;
 }) {
   const t = useTranslations("recipe");
-  const tf = useTranslations("filter");
   const tc = useTranslations("common");
   const image = mediaUrl(recipe.image);
 
@@ -62,7 +69,9 @@ export const RecipeCard = memo(function RecipeCard({
             fill
             sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
             priority={priority}
-            className="object-cover transition-transform duration-[var(--duration-slower)] ease-[var(--ease-standard)] group-hover:scale-[1.04] motion-reduce:group-hover:scale-100"
+            className="object-cover transition-transform duration-[var(--duration-page)] ease-[var(--ease-standard)] group-hover:scale-[1.05] motion-reduce:group-hover:scale-100"
+            placeholder="blur"
+            blurDataURL={BLUR_PLACEHOLDER}
           />
         ) : (
           <div className="flex size-full items-center justify-center text-fg-subtle">
@@ -78,23 +87,22 @@ export const RecipeCard = memo(function RecipeCard({
           </div>
         )}
 
-        <div className="absolute inset-x-2 top-2 z-20 flex items-start justify-between gap-2 pointer-events-none">
+        <div className="absolute inset-x-2 top-2 z-20 flex items-start justify-between gap-2">
           {matchPercentage != null ? (
             <Badge tone={matchPercentage >= 80 ? "success" : matchPercentage >= 50 ? "accent" : "neutral"}>
               {t("matchBadge", { percentage: matchPercentage })}
             </Badge>
           ) : recipe.category ? (
-            <Badge tone="neutral" className="bg-canvas/85 backdrop-blur-sm">
-              {recipe.category.name}
-            </Badge>
+            <Badge tone="neutral">{recipe.category.name}</Badge>
           ) : (
             <span />
           )}
+          <FavoriteButton recipeId={recipe.id} initialIsFavorite={recipe.is_favorite} size="sm" />
         </div>
       </div>
 
       <div className="flex flex-1 flex-col gap-3 p-4">
-        <h3 className="text-[15px] font-semibold leading-snug text-fg line-clamp-2-safe">
+        <h3 className="text-[15px] font-semibold leading-snug text-fg line-clamp-2-safe transition-colors duration-[var(--duration-fast)] ease-[var(--ease-standard)] group-hover:text-brand-hover">
           <Link
             href={`/recipes/${recipe.slug}`}
             className="after:absolute after:inset-0 after:content-['']"
@@ -121,7 +129,9 @@ export const RecipeCard = memo(function RecipeCard({
         </div>
 
         <div className="mt-auto flex flex-wrap gap-1.5">
-          <Badge size="sm">{tf(`difficulty.${recipe.difficulty}` as "difficulty.easy")}</Badge>
+          {/* Difficulty arrives pre-localized from the API (?lang=), so it is
+              rendered as-is rather than looked up in the message catalog. */}
+          {recipe.difficulty ? <Badge size="sm">{recipe.difficulty}</Badge> : null}
         </div>
       </div>
     </article>

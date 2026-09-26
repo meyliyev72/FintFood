@@ -31,12 +31,24 @@ class RecipeFilter(django_filters.FilterSet):
         fields = ["category", "difficulty", "query", "max_time", "time_range", "diet"]
 
     def filter_query(self, queryset, name, value):
-        """Case-insensitive match across title, description, category, ingredients."""
+        """Case-insensitive match across title, description, category, ingredients.
+
+        Category and ingredient names are matched in *every* stored language,
+        not just the canonical one, so a user typing "nonushta" or " завтрак "
+        in the uz/ru UI finds the same rows. User-authored text (title,
+        description) is only ever written in one language and is matched as-is.
+        """
         return queryset.filter(
             Q(title__icontains=value)
             | Q(description__icontains=value)
             | Q(category__name__icontains=value)
+            | Q(category__name_uz__icontains=value)
+            | Q(category__name_ru__icontains=value)
+            | Q(category__name_en__icontains=value)
             | Q(recipe_ingredients__ingredient__name__icontains=value)
+            | Q(recipe_ingredients__ingredient__name_uz__icontains=value)
+            | Q(recipe_ingredients__ingredient__name_ru__icontains=value)
+            | Q(recipe_ingredients__ingredient__name_en__icontains=value)
         ).distinct()
 
     def filter_max_time(self, queryset, name, value):

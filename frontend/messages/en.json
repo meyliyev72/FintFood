@@ -99,7 +99,12 @@
     "emptyHint": "Try removing a filter or searching for something else.",
     "loadMore": "Load more",
     "resultCount": "{count, plural, =0 {No recipes} one {# recipe} other {# recipes}}",
-    "activeFilters": "Active filters"
+    "activeFilters": "Active filters",
+    "pagination": "Pagination",
+    "previousPage": "Previous page",
+    "nextPage": "Next page",
+    "goToPage": "Go to page {page}",
+    "clearSearch": "Clear search"
   },
   "filter": {
     "category": "Category",
