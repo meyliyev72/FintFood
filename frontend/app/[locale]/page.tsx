@@ -11,7 +11,9 @@ import { RecipeGrid } from "@/components/recipe/recipe-grid";
 import { SectionHeader } from "@/components/ui";
 import { Link } from "@/i18n/navigation";
 import { routing, type Locale } from "@/i18n/routing";
+import type { Recipe } from "@/types";
 import { categoriesApi, ingredientsApi, recipesApi } from "@/lib/api";
+import { emptyPage, readOrPrerenderEmpty } from "@/lib/api/build-safety";
 
 export function generateStaticParams() {
   return routing.locales.map((locale) => ({ locale }));
@@ -59,14 +61,28 @@ export default async function HomePage({
   const t = await getTranslations("home");
   const ctx = { locale };
 
-  // Five independent reads; one round trip each, all in parallel.
+  // Five independent reads; one round trip each, all in parallel. During a
+  // build without a running API each degrades to an empty rail rather than
+  // failing the build (see lib/api/build-safety.ts).
   const [categories, popular, quick, uzbek, latest, catalog] = await Promise.all([
-    categoriesApi.list(ctx),
-    recipesApi.list({ ordering: "-avg_rating", page_size: RAIL_SIZE }, ctx),
-    recipesApi.list({ max_time: 30, ordering: "total_time", page_size: RAIL_SIZE }, ctx),
-    recipesApi.list({ category: "uzbek-cuisine", page_size: RAIL_SIZE }, ctx),
-    recipesApi.list({ ordering: "-created_at", page_size: RAIL_SIZE }, ctx),
-    ingredientsApi.list({}, ctx),
+    readOrPrerenderEmpty(() => categoriesApi.list(ctx), []),
+    readOrPrerenderEmpty(
+      () => recipesApi.list({ ordering: "-avg_rating", page_size: RAIL_SIZE }, ctx),
+      emptyPage<Recipe>(),
+    ),
+    readOrPrerenderEmpty(
+      () => recipesApi.list({ max_time: 30, ordering: "total_time", page_size: RAIL_SIZE }, ctx),
+      emptyPage<Recipe>(),
+    ),
+    readOrPrerenderEmpty(
+      () => recipesApi.list({ category: "uzbek-cuisine", page_size: RAIL_SIZE }, ctx),
+      emptyPage<Recipe>(),
+    ),
+    readOrPrerenderEmpty(
+      () => recipesApi.list({ ordering: "-created_at", page_size: RAIL_SIZE }, ctx),
+      emptyPage<Recipe>(),
+    ),
+    readOrPrerenderEmpty(() => ingredientsApi.list({}, ctx), []),
   ]);
 
   // The eight most-used ingredients make the best starter chips; both the list

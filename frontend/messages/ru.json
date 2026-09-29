@@ -1,4 +1,7 @@
 {
+  "meta": {
+    "description": "Ищите тысячи рецептов, подбирайте блюда по категориям и готовьте из тех продуктов, которые уже есть у вас дома."
+  },
   "common": {
     "appName": "FintFood",
     "tagline": "Рецепты под то, что уже есть у вас дома.",
@@ -149,9 +152,11 @@
     "addingToList": "Добавление…",
     "signInToAddList": "Войдите, чтобы собрать список покупок",
     "ingredients": "Ингредиенты",
+    "ingredientsProgress": "Отмечено {done} из {total}",
     "instructions": "Приготовление",
     "nutrition": "Пищевая ценность",
     "calories": "Калории",
+    "unitKcal": "ккал",
     "protein": "Белки",
     "carbs": "Углеводы",
     "fat": "Жиры",
@@ -165,6 +170,7 @@
     "comment": "Комментарий",
     "commentPlaceholder": "Как получилось?",
     "submitReview": "Отправить отзыв",
+    "reviewSubmitted": "Спасибо — ваш отзыв опубликован.",
     "noReviews": "Отзывов пока нет. Будьте первым.",
     "signInToReview": "Войдите, чтобы оставить отзыв",
     "deleteReview": "Удалить отзыв",
@@ -209,6 +215,7 @@
     "removeConfirm": "Убрать «{name}» из списка?",
     "added": "Добавлено: {count}",
     "merged": "Объединено: {count}",
+    "addedWithMerges": "Добавлено: {added} · объединено с существующими: {merged}",
     "cleared": "Убрано: {count}",
     "markComplete": "Отметить купленным"
   },

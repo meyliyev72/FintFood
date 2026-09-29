@@ -8,7 +8,8 @@ import type {
   RecipeMatch,
 } from "@/types";
 
-type Ctx = Pick<RequestOptions, "locale" | "signal">;
+/** `next` is allowed so server components can opt a detail fetch into ISR. */
+type Ctx = Pick<RequestOptions, "locale" | "signal" | "next">;
 
 export interface RecipeWriteIngredient {
   ingredient_id?: number | null;

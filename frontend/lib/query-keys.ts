@@ -24,4 +24,6 @@ export const queryKeys = {
   shoppingList: ["shopping-list"] as const,
 
   reviews: (recipeId: number) => ["reviews", "recipe", recipeId] as const,
+  /** Prefix match: invalidating this drops every recipe's review list. */
+  recipeReviews: ["reviews", "recipe"] as const,
 } as const;

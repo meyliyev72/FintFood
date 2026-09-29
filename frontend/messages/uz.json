@@ -1,4 +1,7 @@
 {
+  "meta": {
+    "description": "Minglab retseptlarni qidiring, kategoriyalar bo'yicha ko'ring va uyda bor mahsulotlaringizdan taom tayyorlang."
+  },
   "common": {
     "appName": "FintFood",
     "tagline": "Sizda bor mahsulotlarga mos retseptlar.",
@@ -149,9 +152,11 @@
     "addingToList": "Qoʻshilmoqda…",
     "signInToAddList": "Xaridlar roʻyxati uchun kiring",
     "ingredients": "Mahsulotlar",
+    "ingredientsProgress": "{total} tadan {done} tasi belgilandi",
     "instructions": "Tayyorlash",
     "nutrition": "Kaloriyalik",
     "calories": "Kaloriya",
+    "unitKcal": "kcal",
     "protein": "Oqsil",
     "carbs": "Uglevod",
     "fat": "Yogʻ",
@@ -165,6 +170,7 @@
     "comment": "Izoh",
     "commentPlaceholder": "Qanday chiqdi?",
     "submitReview": "Izohni yuborish",
+    "reviewSubmitted": "Rahmat — izohingiz joylandi.",
     "noReviews": "Hali izohlar yoʻq. Birinchi boʻlib boʻling.",
     "signInToReview": "Izoh qoldirish uchun kiring",
     "deleteReview": "Izohni oʻchirish",
@@ -209,6 +215,7 @@
     "removeConfirm": "«{name}» roʻyxatdan oʻchirilsinmi?",
     "added": "{count, plural, one {# ta mahsulot qoʻshildi} other {# ta mahsulot qoʻshildi}}",
     "merged": "{count, plural, one {# ta birlashtirildi} other {# ta birlashtirildi}}",
+    "addedWithMerges": "{added} ta qoʻshildi · {merged} ta mavjud qator bilan birlashtirildi",
     "cleared": "{count, plural, one {# ta tozalandi} other {# ta tozalandi}}",
     "markComplete": "Olib boʻldi deb belgilash"
   },

@@ -4,6 +4,7 @@ import { Suspense } from "react";
 import { Link } from "@/i18n/navigation";
 import { localeNames, locales, type Locale } from "@/i18n/routing";
 import { categoriesApi } from "@/lib/api";
+import { readOrPrerenderEmpty } from "@/lib/api/build-safety";
 import { Skeleton } from "@/components/ui";
 
 /** Social links are placeholders until the accounts exist (§5.8). */
@@ -112,10 +113,14 @@ export async function SiteFooter() {
 
 /** Real category links, cached for an hour so the footer stays off the hot path. */
 async function FooterCategories({ label, locale }: { label: string; locale: Locale }) {
-  const categories = await categoriesApi.list({
-    locale,
-    next: { revalidate: 3600 },
-  });
+  const categories = await readOrPrerenderEmpty(
+    () =>
+      categoriesApi.list({
+        locale,
+        next: { revalidate: 3600 },
+      }),
+    [],
+  );
   const top = categories.slice(0, 5);
 
   return (

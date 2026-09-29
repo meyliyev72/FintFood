@@ -117,6 +117,7 @@
 
 @theme inline {
   --font-sans: var(--font-app-sans), ui-sans-serif, system-ui, sans-serif;
+  --font-serif: var(--font-app-serif), ui-serif, Georgia, serif;
   --font-mono: var(--font-app-mono), ui-monospace, monospace;
 
   --color-canvas: var(--color-canvas);
@@ -203,6 +204,17 @@
     text-rendering: optimizeLegibility;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
+  }
+
+  /* §3: the editorial serif is reserved for headings so the page reads with a
+     clear hierarchy instead of one uniform sans. Applied at the element level
+     rather than per-component so no page can forget it. */
+  h1,
+  h2,
+  h3 {
+    font-family: var(--font-app-serif), ui-serif, Georgia, serif;
+    font-weight: 600;
+    letter-spacing: -0.01em;
   }
 
   /* A single, consistent focus ring for every interactive element. */

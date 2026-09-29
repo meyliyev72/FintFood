@@ -1,4 +1,7 @@
 {
+  "meta": {
+    "description": "Search thousands of recipes, browse by category, and find what to cook from the ingredients you already have at home."
+  },
   "common": {
     "appName": "FintFood",
     "tagline": "Recipes matched to the ingredients you already have.",
@@ -150,9 +153,11 @@
     "addingToList": "Adding…",
     "signInToAddList": "Sign in to build a shopping list",
     "ingredients": "Ingredients",
+    "ingredientsProgress": "{done} of {total} ingredients",
     "instructions": "Instructions",
     "nutrition": "Nutrition",
     "calories": "Calories",
+    "unitKcal": "kcal",
     "protein": "Protein",
     "carbs": "Carbs",
     "fat": "Fat",
@@ -166,6 +171,7 @@
     "comment": "Comment",
     "commentPlaceholder": "How did it turn out?",
     "submitReview": "Submit review",
+    "reviewSubmitted": "Thanks — your review is live.",
     "noReviews": "No reviews yet. Be the first to share how it went.",
     "signInToReview": "Sign in to leave a review",
     "deleteReview": "Delete review",
@@ -210,6 +216,7 @@
     "removeConfirm": "Remove “{name}” from your list?",
     "added": "{count, plural, one {# item added} other {# items added}}",
     "merged": "{count, plural, one {# merged} other {# merged}}",
+    "addedWithMerges": "{added, plural, one {# item added} other {# items added}} · {merged, plural, one {# merged with an existing line} other {# merged with existing lines}}",
     "cleared": "{count, plural, one {# item cleared} other {# items cleared}}",
     "markComplete": "Mark as bought"
   },
