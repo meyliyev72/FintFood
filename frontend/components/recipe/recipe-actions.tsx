@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { Check, ShoppingBasket } from "lucide-react";
@@ -8,6 +8,7 @@ import { toast } from "sonner";
 
 import { FavoriteButton } from "@/components/recipe/favorite-button";
 import { Button } from "@/components/ui";
+import { nextParam } from "@/hooks/use-safe-redirect";
 import { usePathname, useRouter } from "@/i18n/navigation";
 import { ApiError } from "@/lib/api/client";
 import { shoppingListApi } from "@/lib/api";
@@ -46,7 +47,7 @@ export function RecipeActions({ recipe }: { recipe: Recipe }) {
     },
     onError: (error) => {
       if (error instanceof ApiError && error.isUnauthorized) {
-        router.push(`/login?next=${encodeURIComponent(pathname)}`);
+        router.push(`/login${nextParam(pathname)}`);
         return;
       }
       toast.error(te("generic"));
@@ -55,7 +56,7 @@ export function RecipeActions({ recipe }: { recipe: Recipe }) {
 
   function requireAuth(): boolean {
     if (isAuthenticated) return true;
-    router.push(`/login?next=${encodeURIComponent(pathname)}`);
+    router.push(`/login${nextParam(pathname)}`);
     return false;
   }
 
@@ -87,7 +88,7 @@ export function RecipeActions({ recipe }: { recipe: Recipe }) {
       {!isLoading && !isAuthenticated ? (
         <button
           type="button"
-          onClick={() => router.push(`/login?next=${encodeURIComponent(pathname)}`)}
+          onClick={() => router.push(`/login${nextParam(pathname)}`)}
           className="text-sm text-fg-muted underline underline-offset-4 transition-colors hover:text-fg-brand"
         >
           {t("signInToAddList")}

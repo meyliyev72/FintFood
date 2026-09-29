@@ -34,7 +34,7 @@ import { useAuth } from "@/providers/auth-provider";
 
 const NAV_LINKS = [
   { href: "/recipes", key: "recipes", icon: LayoutGrid },
-  { href: "/find", key: "findByIngredients", icon: Sparkles },
+  { href: "/find-by-ingredients", key: "findByIngredients", icon: Sparkles },
   { href: "/categories", key: "categories", icon: LayoutGrid },
   { href: "/favorites", key: "favorites", icon: Heart },
 ] as const;

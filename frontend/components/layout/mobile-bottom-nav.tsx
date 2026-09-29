@@ -20,7 +20,7 @@ export function MobileBottomNav({ onOpenUtilities }: { onOpenUtilities: () => vo
   const items = [
     { href: "/", key: "home", icon: Home },
     { href: "/recipes", key: "recipes", icon: LayoutGrid },
-    { href: "/find", key: "findByIngredients", icon: Search },
+    { href: "/find-by-ingredients", key: "findByIngredients", icon: Search },
     { href: "/favorites", key: "favorites", icon: Heart },
   ] as const;
 

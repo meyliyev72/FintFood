@@ -54,7 +54,6 @@
     "closeMenu": "Close menu",
     "openUtilities": "Language and theme settings",
     "utilities": "Settings",
-    "utilities": "Settings",
     "searchPlaceholder": "Search recipes…",
     "primaryNavigation": "Primary"
   },
@@ -264,6 +263,8 @@
     "resetSubtitle": "Pick a strong password you haven't used before.",
     "confirmPassword": "Confirm password",
     "name": "Full name",
+    "email": "Email",
+    "password": "Password",
     "signIn": "Sign in",
     "signUp": "Create account",
     "sendResetLink": "Send reset link",
@@ -277,7 +278,12 @@
     "signingUp": "Creating account…",
     "passwordMismatch": "Passwords do not match",
     "emailTaken": "An account with this email already exists",
-    "invalidCredentials": "We couldn't sign you in with those details"
+    "invalidCredentials": "We couldn't sign you in with those details",
+    "passwordHint": "At least 8 characters, including a letter and a number.",
+    "showPassword": "Show password",
+    "hidePassword": "Hide password",
+    "sending": "Sending…",
+    "resetLinkInvalid": "This reset link is incomplete or has expired. Request a new one."
   },
   "errors": {
     "generic": "Something went wrong. Please try again.",

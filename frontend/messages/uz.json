@@ -263,6 +263,8 @@
     "resetSubtitle": "Avval ishlatmagan kuchli parol tanlang.",
     "confirmPassword": "Parolni tasdiqlash",
     "name": "Toʻliq ism",
+    "email": "Elektron pochta",
+    "password": "Parol",
     "signIn": "Kirish",
     "signUp": "Hisob yaratish",
     "sendResetLink": "Havola yuborish",
@@ -276,7 +278,12 @@
     "signingUp": "Hisob yaratilmoqda…",
     "passwordMismatch": "Parollar mos kelmadi",
     "emailTaken": "Bu pochta bilan hisob allaqachon mavjud",
-    "invalidCredentials": "Ushbu maʼlumotlar bilan kirishga imkon bermadi"
+    "invalidCredentials": "Ushbu maʼlumotlar bilan kirishga imkon bermadi",
+    "passwordHint": "Kamida 8 belgi, kamida bitta harf va bitta raqam.",
+    "showPassword": "Parolni koʻrsatish",
+    "hidePassword": "Parolni yashirish",
+    "sending": "Yuborilmoqda…",
+    "resetLinkInvalid": "Tiklash havolasi toʻliq emas yoki muddati oʻtgan. Yangi havola soʻrang."
   },
   "errors": {
     "generic": "Xatolik yuz berdi. Iltimos, qayta urinib koʻring.",

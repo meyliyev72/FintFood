@@ -9,6 +9,7 @@ import { toast } from "sonner";
 
 import { favoritesApi } from "@/lib/api";
 import { ApiError } from "@/lib/api/client";
+import { nextParam } from "@/hooks/use-safe-redirect";
 import { spring } from "@/lib/motion";
 import { queryKeys } from "@/lib/query-keys";
 import { cn } from "@/lib/utils";
@@ -100,7 +101,7 @@ export function FavoriteButton({
     if (!isAuthenticated) {
       // `pathname` from the i18n navigation helper is already locale-prefixed,
       // so the user returns to this exact recipe after signing in.
-      router.push(`/login?next=${encodeURIComponent(pathname)}`);
+      router.push(`/login${nextParam(pathname)}`);
       return;
     }
 

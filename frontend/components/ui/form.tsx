@@ -2,6 +2,7 @@
 
 import * as LabelPrimitive from "@radix-ui/react-label";
 import * as SwitchPrimitive from "@radix-ui/react-switch";
+import { motion } from "framer-motion";
 import { Check, ChevronDown, Star } from "lucide-react";
 import * as React from "react";
 
@@ -348,6 +349,41 @@ export function RatingInput({
         );
       })}
     </div>
+  );
+}
+
+/* -------------------------------------------------------------------------- */
+/* Form alert                                                                 */
+/* -------------------------------------------------------------------------- */
+
+/**
+ * Form-level error banner.
+ *
+ * Collapses to nothing when there is no message, so a form can render it
+ * unconditionally. The height/fade entrance follows §22.2.
+ */
+export function FormAlert({
+  message,
+  className,
+}: {
+  message?: string | null;
+  className?: string;
+}) {
+  if (!message) return null;
+  return (
+    <motion.p
+      role="alert"
+      initial={{ opacity: 0, height: 0 }}
+      animate={{ opacity: 1, height: "auto" }}
+      transition={{ duration: 0.15, ease: [0.16, 1, 0.3, 1] }}
+      className={cn(
+        "overflow-hidden rounded-[var(--radius-control)] border border-danger/30 bg-danger-soft/50 px-3.5 py-2.5",
+        "text-sm font-medium text-danger",
+        className,
+      )}
+    >
+      {message}
+    </motion.p>
   );
 }
 
