@@ -1,10 +1,46 @@
 "use client";
 
 import { AlertCircle, ChevronLeft, ChevronRight, RefreshCw } from "lucide-react";
+import { motion, useReducedMotion } from "framer-motion";
 import { useTranslations } from "next-intl";
+import type { ReactNode } from "react";
 
 import { Button, Skeleton } from "@/components/ui";
 import { cn } from "@/lib/utils";
+
+/* -------------------------------------------------------------------------- */
+/* Reveal on scroll                                                            */
+/* -------------------------------------------------------------------------- */
+
+/**
+ * Fades a block in the first time 15% of it is visible (§22.2).
+ *
+ * With `prefers-reduced-motion` the transform is dropped entirely and the
+ * block simply paints, which is the global rule from §22.3 applied once rather
+ * than at every call site.
+ */
+export function RevealSection({
+  children,
+  className,
+}: {
+  children: ReactNode;
+  className?: string;
+}) {
+  const prefersReducedMotion = useReducedMotion();
+  if (prefersReducedMotion) return <div className={className}>{children}</div>;
+
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 16 }}
+      whileInView={{ opacity: 1, y: 0 }}
+      viewport={{ once: true, amount: 0.15 }}
+      transition={{ duration: 0.35, ease: [0.16, 1, 0.3, 1] }}
+      className={className}
+    >
+      {children}
+    </motion.div>
+  );
+}
 
 /* -------------------------------------------------------------------------- */
 /* Error state                                                                 */

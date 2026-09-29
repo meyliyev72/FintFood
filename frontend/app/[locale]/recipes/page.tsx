@@ -3,8 +3,10 @@ import type { Metadata } from "next";
 
 import { RecipeBrowser } from "@/components/recipe/recipe-browser";
 import { recipesApi, categoriesApi } from "@/lib/api";
+import { readPageParam, readPaginated } from "@/lib/api/paginated-read";
 import { routing, type Locale } from "@/i18n/routing";
 import { readRecipeFilters } from "@/types";
+import type { Paginated, Recipe } from "@/types";
 
 export function generateStaticParams() {
   return routing.locales.map((locale) => ({ locale }));
@@ -57,10 +59,19 @@ export default async function RecipesPage({
 
   // Validate the URL-sourced filters rather than forwarding them blindly.
   const filters = readRecipeFilters(new URLSearchParams(toQueryString(query)));
+  const page = readPageParam(query.page);
 
   const [initialPage, categories] = await Promise.all([
-    recipesApi.list(filters, { locale }),
-    categoriesApi.list({ locale }),
+    readPaginated<Recipe>({
+      page,
+      clampPath: `/${locale}/recipes`,
+      read: (target) =>
+        recipesApi.list(
+          { ...filters, page: target },
+          { locale, next: { revalidate } },
+        ) as Promise<Paginated<Recipe>>,
+    }),
+    categoriesApi.list({ locale, next: { revalidate } }),
   ]);
 
   return <RecipeBrowser categories={categories} initialPage={initialPage} />;

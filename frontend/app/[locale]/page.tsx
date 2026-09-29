@@ -3,11 +3,9 @@ import type { Metadata } from "next";
 
 import { CategoryCard } from "@/components/home/category-card";
 import { HomeHero } from "@/components/home/home-hero";
-import {
-  HomeIngredientFinder,
-  RevealSection,
-} from "@/components/home/home-ingredient-finder";
+import { HomeIngredientFinder } from "@/components/home/home-ingredient-finder";
 import { RecipeGrid } from "@/components/recipe/recipe-grid";
+import { RevealSection } from "@/components/shared";
 import { SectionHeader } from "@/components/ui";
 import { Link } from "@/i18n/navigation";
 import { routing, type Locale } from "@/i18n/routing";

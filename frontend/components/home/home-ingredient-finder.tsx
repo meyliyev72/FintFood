@@ -152,27 +152,3 @@ export function HomeIngredientFinder({
     </section>
   );
 }
-
-/** Section wrapper that reveals once 15% of it is in view (§22.2). */
-export function RevealSection({
-  children,
-  className,
-}: {
-  children: React.ReactNode;
-  className?: string;
-}) {
-  const prefersReducedMotion = useReducedMotion();
-  if (prefersReducedMotion) return <div className={className}>{children}</div>;
-
-  return (
-    <motion.div
-      initial={{ opacity: 0, y: 16 }}
-      whileInView={{ opacity: 1, y: 0 }}
-      viewport={{ once: true, amount: 0.15 }}
-      transition={{ duration: 0.35, ease: [0.16, 1, 0.3, 1] }}
-      className={className}
-    >
-      {children}
-    </motion.div>
-  );
-}

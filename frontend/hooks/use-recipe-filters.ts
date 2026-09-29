@@ -28,9 +28,13 @@ export function useRecipeFilters() {
   const activeCount = RECIPE_FILTER_KEYS.filter((key) => current.get(key)).length;
 
   const commit = useCallback(
-    (next: URLSearchParams, options: { replace?: boolean } = {}) => {
-      // Any filter change invalidates the current page offset.
-      next.delete("page");
+    (
+      next: URLSearchParams,
+      options: { replace?: boolean; keepPage?: boolean } = {},
+    ) => {
+      // Any filter change invalidates the current page offset. Pagination
+      // itself opts out via `keepPage`.
+      if (!options.keepPage) next.delete("page");
       const search = next.toString();
       const href = search ? `${pathname}?${search}` : pathname;
       startTransition(() => {
@@ -51,7 +55,22 @@ export function useRecipeFilters() {
     [commit, current],
   );
 
+  /** Page navigation: keeps every active filter and scrolls back to the grid. */
+  const setPage = useCallback(
+    (page: number) => {
+      const next = new URLSearchParams(current);
+      if (page > 1) next.set("page", String(page));
+      else next.delete("page");
+      startTransition(() => {
+        const search = next.toString();
+        const href = search ? `${pathname}?${search}` : pathname;
+        router.push(href);
+      });
+    },
+    [current, pathname, router],
+  );
+
   const clearAll = useCallback(() => commit(new URLSearchParams()), [commit]);
 
-  return { current, filters, activeCount, setParam, clearAll, isPending };
+  return { current, filters, activeCount, setParam, setPage, clearAll, isPending };
 }
