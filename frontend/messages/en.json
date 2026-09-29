@@ -137,7 +137,14 @@
     "l": "l",
     "pcs": "pcs",
     "tbsp": "tbsp",
-    "tsp": "tsp"
+    "tsp": "tsp",
+    "cup": "cup",
+    "clove": "clove",
+    "bunch": "bunch",
+    "pinch": "pinch",
+    "slice": "slice",
+    "pack": "pack",
+    "can": "can"
   },
   "recipe": {
     "by": "By {name}",
@@ -226,7 +233,21 @@
     "merged": "{count, plural, one {# merged} other {# merged}}",
     "addedWithMerges": "{added, plural, one {# item added} other {# items added}} · {merged, plural, one {# merged with an existing line} other {# merged with existing lines}}",
     "cleared": "{count, plural, one {# item cleared} other {# items cleared}}",
-    "markComplete": "Mark as bought"
+    "markComplete": "Mark as bought",
+    "editQuantity": "Edit quantity and unit",
+    "editUnit": "Unit",
+    "saveEdit": "Save",
+    "cancelEdit": "Cancel",
+    "addTitle": "Add to list",
+    "itemName": "Name",
+    "quantity": "Quantity",
+    "unit": "Unit",
+    "submitAdd": "Add",
+    "completedCount": "{count, plural, one {# bought} other {# bought}}",
+    "groupsHeading": "Groups",
+    "confirmClearTitle": "Clear completed items",
+    "confirmClearBody": "Every ticked item will be removed from the list. This cannot be undone.",
+    "removed": "Removed from your list"
   },
   "favorites": {
     "title": "Favorites",
@@ -307,7 +328,10 @@
     "fieldRequired": "This field is required",
     "tooShort": "This is too short",
     "invalidEmail": "Enter a valid email address",
-    "positiveNumber": "Enter a positive number"
+    "positiveNumber": "Enter a positive number",
+    "tooLong": "This is too long",
+    "mismatch": "Passwords do not match",
+    "minValue": "Must be at least {min}"
   },
   "notFound": {
     "title": "Page not found",

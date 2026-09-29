@@ -165,7 +165,26 @@ export type ProfileValues = z.infer<ReturnType<typeof profileSchema>>;
 /* Recipe write                                                                */
 /* -------------------------------------------------------------------------- */
 
-export const UNITS: Unit[] = ["g", "kg", "ml", "l", "pcs", "tbsp", "tsp"];
+/**
+ * Mirrors `apps.core.models.Unit`. Keep in sync with the backend enum: a
+ * mismatch would make the API reject a value the UI happily offers.
+ */
+export const UNITS: Unit[] = [
+  "g",
+  "kg",
+  "ml",
+  "l",
+  "pcs",
+  "tbsp",
+  "tsp",
+  "cup",
+  "clove",
+  "bunch",
+  "pinch",
+  "slice",
+  "pack",
+  "can",
+];
 
 export const DIFFICULTIES = ["easy", "medium", "hard"] as const;
 export const RECIPE_STATUSES = ["draft", "pending", "published"] as const;

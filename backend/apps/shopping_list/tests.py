@@ -102,3 +102,117 @@ class ShoppingListApiTests(APITestCase):
         resp = self.client.post("/api/v1/shopping-list/", {"name": "milk", "quantity": "2", "unit": "l"}, format="json")
         self.assertEqual(float(resp.data["quantity"]), 3.0)
         self.assertEqual(ShoppingListItem.objects.filter(user=self.user).count(), 1)
+
+    def test_api_persists_the_submitted_unit(self):
+        """Regression: `unit` used to be a read-only SerializerMethodField, so the
+        submitted value was dropped and every row silently became `pcs`."""
+        resp = self.client.post(
+            "/api/v1/shopping-list/", {"name": "Flour", "quantity": "500", "unit": "g"}, format="json"
+        )
+        self.assertEqual(resp.status_code, status.HTTP_201_CREATED)
+        item = ShoppingListItem.objects.get(id=resp.data["id"])
+        self.assertEqual(item.unit, "g")
+
+    def test_api_merge_uses_submitted_unit_not_pcs_fallback(self):
+        """The same bug also broke merging: two `kg` rows failed to merge because
+        both were being stored as `pcs` alongside unrelated `pcs` lines."""
+        self.client.post(
+            "/api/v1/shopping-list/", {"name": "Sugar", "quantity": "1", "unit": "kg"}, format="json"
+        )
+        resp = self.client.post(
+            "/api/v1/shopping-list/", {"name": "Sugar", "quantity": "2", "unit": "kg"}, format="json"
+        )
+        self.assertEqual(float(resp.data["quantity"]), 3.0)
+        self.assertEqual(ShoppingListItem.objects.filter(user=self.user).count(), 1)
+
+    def test_api_does_not_merge_across_different_submitted_units(self):
+        self.client.post(
+            "/api/v1/shopping-list/", {"name": "Rice", "quantity": "1", "unit": "kg"}, format="json"
+        )
+        self.client.post(
+            "/api/v1/shopping-list/", {"name": "Rice", "quantity": "2", "unit": "g"}, format="json"
+        )
+        self.assertEqual(ShoppingListItem.objects.filter(user=self.user).count(), 2)
+
+    def test_read_returns_localized_unit_and_raw_code(self):
+        """Reads give a label, `unit_code` gives the key a client needs to
+        round-trip an edit without a label -> code lookup table."""
+        created = self.client.post(
+            "/api/v1/shopping-list/", {"name": "Salt", "quantity": "1", "unit": "pcs"}, format="json"
+        )
+        self.assertEqual(created.data["unit_code"], "pcs")
+
+        uz = self.client.get("/api/v1/shopping-list/?lang=uz")
+        ru = self.client.get("/api/v1/shopping-list/?lang=ru")
+        en = self.client.get("/api/v1/shopping-list/?lang=en")
+
+        # Same stored row, three readable labels, one stable key.
+        self.assertEqual(uz.data["results"][0]["unit"], "dona")
+        self.assertEqual(ru.data["results"][0]["unit"], "шт")
+        self.assertEqual(en.data["results"][0]["unit"], "pcs")
+        for page in (uz, ru, en):
+            self.assertEqual(page.data["results"][0]["unit_code"], "pcs")
+
+    def test_edit_round_trips_the_unit_code(self):
+        created = self.client.post(
+            "/api/v1/shopping-list/", {"name": "Oil", "quantity": "1", "unit": "ml"}, format="json"
+        )
+        item_id = created.data["id"]
+        patched = self.client.patch(
+            f"/api/v1/shopping-list/{item_id}/", {"quantity": "250", "unit": "ml"}, format="json"
+        )
+        self.assertEqual(patched.status_code, status.HTTP_200_OK)
+        self.assertEqual(float(patched.data["quantity"]), 250.0)
+        self.assertEqual(ShoppingListItem.objects.get(id=item_id).unit, "ml")
+
+    def test_rejects_an_unknown_unit(self):
+        resp = self.client.post(
+            "/api/v1/shopping-list/", {"name": "X", "quantity": "1", "unit": "parsec"}, format="json"
+        )
+        self.assertEqual(resp.status_code, status.HTTP_400_BAD_REQUEST)
+
+
+class NotFoundErrorShapeTests(APITestCase):
+    """Regression: DRF's own handler rebinds its *local* `exc` when it turns a
+    `Http404` into `NotFound`, so ours saw an exception with no `.detail` and
+    every 404 read "An unexpected error occurred." """
+
+    def test_404_has_a_real_message_and_code(self):
+        resp = self.client.get("/api/v1/recipes/definitely-not-a-real-slug/")
+        self.assertEqual(resp.status_code, status.HTTP_404_NOT_FOUND)
+        self.assertEqual(resp.data["code"], "not-found")
+        self.assertNotIn("unexpected", resp.data["detail"].lower())
+
+    def test_404_on_a_write_endpoint(self):
+        user = User.objects.create_user(email="nf@example.com", password="StrongPass123!")
+        login = self.client.post(
+            "/api/v1/auth/login/",
+            {"email": "nf@example.com", "password": "StrongPass123!"},
+            format="json",
+        )
+        self.client.cookies.update(login.cookies)
+
+        resp = self.client.delete("/api/v1/shopping-list/999999/")
+        self.assertEqual(resp.status_code, status.HTTP_404_NOT_FOUND)
+        self.assertEqual(resp.data["code"], "not-found")
+        self.assertNotIn("unexpected", resp.data["detail"].lower())
+
+    def test_401_and_400_keep_their_codes(self):
+        guest = self.client.get("/api/v1/shopping-list/")
+        self.assertEqual(guest.status_code, status.HTTP_401_UNAUTHORIZED)
+        self.assertEqual(guest.data["code"], "not-authenticated")
+
+        User.objects.create_user(email="nf2@example.com", password="StrongPass123!")
+        login = self.client.post(
+            "/api/v1/auth/login/",
+            {"email": "nf2@example.com", "password": "StrongPass123!"},
+            format="json",
+        )
+        self.client.cookies.update(login.cookies)
+
+        bad = self.client.post(
+            "/api/v1/shopping-list/", {"name": "", "quantity": "1", "unit": "g"}, format="json"
+        )
+        self.assertEqual(bad.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertEqual(bad.data["code"], "validation_error")
+        self.assertIn("name", bad.data["errors"])

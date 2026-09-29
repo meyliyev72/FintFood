@@ -137,7 +137,14 @@
     "l": "л",
     "pcs": "шт",
     "tbsp": "ст. л.",
-    "tsp": "ч. л."
+    "tsp": "ч. л.",
+    "cup": "чашка",
+    "clove": "зубчик",
+    "bunch": "пучок",
+    "pinch": "щепотка",
+    "slice": "ломтик",
+    "pack": "упаковка",
+    "can": "банка"
   },
   "recipe": {
     "by": "Автор: {name}",
@@ -226,7 +233,21 @@
     "merged": "Объединено: {count}",
     "addedWithMerges": "Добавлено: {added} · объединено с существующими: {merged}",
     "cleared": "Убрано: {count}",
-    "markComplete": "Отметить купленным"
+    "markComplete": "Отметить купленным",
+    "editQuantity": "Изменить количество и единицу",
+    "editUnit": "Единица",
+    "saveEdit": "Сохранить",
+    "cancelEdit": "Отмена",
+    "addTitle": "Добавить в список",
+    "itemName": "Наименование",
+    "quantity": "Количество",
+    "unit": "Единица",
+    "submitAdd": "Добавить",
+    "completedCount": "{count, plural, one {# покуплено} few {# покуплено} other {# покуплено}}",
+    "groupsHeading": "Группы",
+    "confirmClearTitle": "Очистить купленные",
+    "confirmClearBody": "Все отмеченные позиции будут удалены из списка. Отменить нельзя.",
+    "removed": "Элемент удалён из списка"
   },
   "favorites": {
     "title": "Избранное",
@@ -307,7 +328,10 @@
     "fieldRequired": "Обязательное поле",
     "tooShort": "Слишком короткое значение",
     "invalidEmail": "Введите корректный адрес эл. почты",
-    "positiveNumber": "Введите положительное число"
+    "positiveNumber": "Введите положительное число",
+    "tooLong": "Слишком длинно",
+    "mismatch": "Пароли не совпадают",
+    "minValue": "Минимум {min}"
   },
   "notFound": {
     "title": "Страница не найдена",

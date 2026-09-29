@@ -137,7 +137,14 @@
     "l": "l",
     "pcs": "dona",
     "tbsp": "stol qoshiq",
-    "tsp": "choy qoshiq"
+    "tsp": "choy qoshiq",
+    "cup": "kosacha",
+    "clove": "bo‘lak",
+    "bunch": "tugun",
+    "pinch": "chuq",
+    "slice": "bo‘lak",
+    "pack": "qadoq",
+    "can": "banka"
   },
   "recipe": {
     "by": "{name} tomonidan",
@@ -226,7 +233,21 @@
     "merged": "{count, plural, one {# ta birlashtirildi} other {# ta birlashtirildi}}",
     "addedWithMerges": "{added} ta qoʻshildi · {merged} ta mavjud qator bilan birlashtirildi",
     "cleared": "{count, plural, one {# ta tozalandi} other {# ta tozalandi}}",
-    "markComplete": "Olib boʻldi deb belgilash"
+    "markComplete": "Olib boʻldi deb belgilash",
+    "editQuantity": "Miqdor va birlikni tahrirlash",
+    "editUnit": "Birlik",
+    "saveEdit": "Saqlash",
+    "cancelEdit": "Bekor qilish",
+    "addTitle": "Qo‘lda qo‘shish",
+    "itemName": "Nomi",
+    "quantity": "Miqdor",
+    "unit": "Birlik",
+    "submitAdd": "Qo‘shish",
+    "completedCount": "{count, plural, one {# xarid qilindi} other {# xarid qilindi}}",
+    "groupsHeading": "Guruhlar",
+    "confirmClearTitle": "Xarid qilinganlarni tozalash",
+    "confirmClearBody": "Belgilangan barcha elementlar ro‘yxatdan o‘chiriladi. Bu amalni bekor qilib bo‘lmaydi.",
+    "removed": "Element ro‘yxatdan o‘chirildi"
   },
   "favorites": {
     "title": "Sevimlilar",
@@ -307,7 +328,10 @@
     "fieldRequired": "Bu maydon toʻldirilishi shart",
     "tooShort": "Bu juda qisqa",
     "invalidEmail": "Toʻgʻri pochta manzilini kiriting",
-    "positiveNumber": "Musbat son kiriting"
+    "positiveNumber": "Musbat son kiriting",
+    "tooLong": "Juda uzun",
+    "mismatch": "Parollar mos kelmadi",
+    "minValue": "Kamida {min} bo‘lishi kerak"
   },
   "notFound": {
     "title": "Sahifa topilmadi",

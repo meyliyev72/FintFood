@@ -16,7 +16,7 @@ export type Locale = "uz" | "ru" | "en";
 export type Difficulty = "easy" | "medium" | "hard";
 
 /** Raw `Unit` values accepted by the API on write. */
-export type Unit = "g" | "kg" | "ml" | "l" | "pcs" | "tbsp" | "tsp";
+export type Unit = "g" | "kg" | "ml" | "l" | "pcs" | "tbsp" | "tsp" | "cup" | "clove" | "bunch" | "pinch" | "slice" | "pack" | "can";
 
 /**
  * A unit as returned by read endpoints: already translated by the API via
@@ -199,6 +199,8 @@ export interface ShoppingListItem {
   quantity: string;
   /** Pre-localized display label, not a raw `Unit`. */
   unit: UnitLabel;
+  /** Raw `Unit` key, so an edit can be sent back without a label->code map. */
+  unit_code: Unit;
   /** Localized server-side; falls back to a section header for free-text items. */
   category: string;
   is_completed: boolean;

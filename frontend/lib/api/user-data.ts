@@ -28,7 +28,9 @@ export const favoritesApi = {
 };
 
 export const shoppingListApi = {
-  list: (ctx: Ctx = {}) => api.get<ShoppingListItem[]>("/shopping-list/", ctx),
+  /** Paginated, newest first. Items arrive unsorted within a page. */
+  list: (ctx: Ctx = {}) =>
+    api.get<Paginated<ShoppingListItem>>("/shopping-list/", ctx),
 
   /** Creates or merges into an existing item with the same name. */
   add: (input: ShoppingListItemInput, ctx: Ctx = {}) =>

@@ -1,5 +1,26 @@
+from django.core.exceptions import PermissionDenied
+from django.http import Http404
+from rest_framework import exceptions
 from rest_framework.exceptions import ValidationError
 from rest_framework.views import exception_handler
+
+
+def _normalize(exc):
+    """Rebuild the exception the way DRF does before we read its metadata.
+
+    DRF's own ``exception_handler`` converts a bare ``Http404`` into
+    ``NotFound`` and a bare ``PermissionDenied`` into its DRF counterpart, but
+    only in its *local* scope. The original object reaches us unchanged, and a
+    plain ``Http404`` has neither ``.detail`` nor ``.default_code`` — which is
+    why every 404 used to come back as "An unexpected error occurred.".
+    """
+    if isinstance(exc, Http404):
+        return exceptions.NotFound(*exc.args)
+    if isinstance(exc, PermissionDenied) and not isinstance(
+        exc, exceptions.PermissionDenied
+    ):
+        return exceptions.PermissionDenied(*exc.args)
+    return exc
 
 
 def fintfood_exception_handler(exc, context):
@@ -13,7 +34,12 @@ def fintfood_exception_handler(exc, context):
     if response is None:
         return None
 
-    message = getattr(exc, "detail", "An unexpected error occurred.")
+    exc = _normalize(exc)
+
+    message = getattr(exc, "detail", None)
+    if message is None:
+        # No usable detail: keep the status, say something honest.
+        message = _default_detail(response.status_code)
 
     errors = None
     if isinstance(message, dict):
@@ -36,10 +62,34 @@ def fintfood_exception_handler(exc, context):
     if isinstance(exc, ValidationError):
         payload["code"] = "validation_error"
     else:
-        payload["code"] = getattr(exc, "default_code", "error").replace("_", "-")
+        payload["code"] = getattr(exc, "default_code", _default_code(response.status_code)).replace(
+            "_", "-"
+        )
 
     response.data = payload
     return response
+
+
+def _default_code(status_code: int) -> str:
+    return {
+        400: "invalid",
+        401: "not-authenticated",
+        403: "permission-denied",
+        404: "not-found",
+        405: "method-not-allowed",
+        429: "throttled",
+    }.get(status_code, "error")
+
+
+def _default_detail(status_code: int) -> str:
+    return {
+        400: "Invalid input.",
+        401: "Authentication credentials were not provided.",
+        403: "You do not have permission to perform this action.",
+        404: "Not found.",
+        405: "Method not allowed.",
+        429: "Request was throttled.",
+    }.get(status_code, "Request failed.")
 
 
 def _first_message(value):
