@@ -1,4 +1,5 @@
 from decimal import Decimal
+import json
 
 from django.core.files.images import get_image_dimensions
 from django.db import models, transaction
@@ -197,6 +198,35 @@ class StepInputSerializer(serializers.Serializer):
     image = serializers.ImageField(required=False, allow_null=True)
 
 
+class JSONListField(serializers.ListField):
+    """A list that also accepts a JSON-encoded string.
+
+    ``multipart/form-data`` (needed for image uploads) cannot carry nested
+    structures, so browsers send lists as JSON text. On a QueryDict DRF's
+    ``ListField.get_value`` wraps that text in a one-item list, so accept
+    ``[...]``/``["[...]"]`` as well as a real list. That way the same endpoint
+    works with or without files attached.
+    """
+
+    default_error_messages = {"not_json": "Expected a JSON array."}
+
+    def to_internal_value(self, data):
+        if isinstance(data, (str, bytes)):
+            data = self._loads(data)
+        elif isinstance(data, list) and len(data) == 1 and isinstance(data[0], (str, bytes)):
+            # The multipart shape: one JSON string inside a one-item list.
+            data = self._loads(data[0])
+        if not isinstance(data, list):
+            self.fail("not_json")
+        return super().to_internal_value(data)
+
+    def _loads(self, raw):
+        try:
+            return json.loads(raw)
+        except (TypeError, ValueError):
+            self.fail("not_json")
+
+
 class RecipeWriteSerializer(serializers.ModelSerializer):
     """Create/update handler for recipes with dynamic nested lists.
 
@@ -207,11 +237,13 @@ class RecipeWriteSerializer(serializers.ModelSerializer):
 
     id = serializers.IntegerField(read_only=True)
     slug = serializers.SlugField(read_only=True)
-    cover_image = serializers.ImageField(read_only=True)
-    ingredients = serializers.ListField(
+    # Writable: this is the cover upload path. It used to be read_only, which
+    # made image uploads impossible and left validate_cover_image unreachable.
+    cover_image = serializers.ImageField(required=False, allow_null=True)
+    ingredients = JSONListField(
         child=IngredientInputSerializer(), write_only=True, required=False
     )
-    steps = serializers.ListField(child=StepInputSerializer(), write_only=True, required=False)
+    steps = JSONListField(child=StepInputSerializer(), write_only=True, required=False)
     extra_images = serializers.ListField(
         child=serializers.ImageField(), write_only=True, required=False
     )

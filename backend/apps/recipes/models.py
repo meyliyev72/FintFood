@@ -75,13 +75,17 @@ class Recipe(TimeStampedModel, SluggedModel):
         return self.title
 
     def save(self, *args, **kwargs):
-        base = slugify(self.title) or "recipe"
-        candidate = base
-        suffix = 2
-        while Recipe.objects.filter(slug=candidate).exclude(pk=self.pk).exists():
-            candidate = f"{base}-{suffix}"
-            suffix += 1
-        self.slug = candidate
+        # The slug is the public URL, so it is assigned once at creation and then
+        # left alone. Regenerating it on every save meant that fixing a typo in
+        # the title silently moved the recipe and broke every inbound link.
+        if not self.slug:
+            base = slugify(self.title) or "recipe"
+            candidate = base
+            suffix = 2
+            while Recipe.objects.filter(slug=candidate).exclude(pk=self.pk).exists():
+                candidate = f"{base}-{suffix}"
+                suffix += 1
+            self.slug = candidate
         super().save(*args, **kwargs)
 
 

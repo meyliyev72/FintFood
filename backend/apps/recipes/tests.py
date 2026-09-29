@@ -1,4 +1,9 @@
+import json
+import struct
+import zlib
+
 from django.contrib.auth import get_user_model
+from django.core.files.uploadedfile import SimpleUploadedFile
 from django.utils.text import slugify
 
 from rest_framework import status
@@ -9,6 +14,23 @@ from apps.ingredients.models import Ingredient, IngredientCategory
 from apps.recipes.models import Difficulty, InstructionStep, Recipe, RecipeIngredient, RecipeStatus, Unit
 
 User = get_user_model()
+
+
+def make_png(width=200, height=200):
+    """A real 200x200 PNG, built by hand so the suite needs Pillow-free fixtures."""
+    sig = b"\x89PNG\r\n\x1a\n"
+
+    def chunk(tag, data):
+        body = tag + data
+        return struct.pack(">I", len(data)) + body + struct.pack(">I", zlib.crc32(body) & 0xFFFFFFFF)
+
+    header = struct.pack(">IIBBBBB", width, height, 8, 2, 0, 0, 0)
+    pixels = b"".join(b"\x00" + b"\x40\x80\xc0" * width for _ in range(height))
+    return SimpleUploadedFile(
+        "cover.png",
+        sig + chunk(b"IHDR", header) + chunk(b"IDAT", zlib.compress(pixels)) + chunk(b"IEND", b""),
+        content_type="image/png",
+    )
 
 
 def make_ingredient(name, cat_slug="vegetables"):
@@ -164,6 +186,117 @@ class RecipeCrudTests(APITestCase):
     def test_recipe_404_for_missing_slug(self):
         resp = self.client.get("/api/v1/recipes/does-not-exist/")
         self.assertEqual(resp.status_code, status.HTTP_404_NOT_FOUND)
+
+    def test_slug_is_stable_when_the_title_changes(self):
+        """The slug is the public URL: editing a title must not move the recipe,
+        otherwise every inbound link to it 404s."""
+        original = self.recipe.slug
+        client = auth_client(self.client)
+        resp = client.patch(
+            f"/api/v1/recipes/{original}/", {"title": "A Completely New Name"}, format="json"
+        )
+        self.assertEqual(resp.status_code, status.HTTP_200_OK)
+        self.recipe.refresh_from_db()
+        self.assertEqual(self.recipe.title, "A Completely New Name")
+        self.assertEqual(self.recipe.slug, original)
+        # The old URL still resolves.
+        self.assertEqual(
+            self.client.get(f"/api/v1/recipes/{original}/").status_code,
+            status.HTTP_200_OK,
+        )
+
+    def test_slugs_stay_unique_across_recipes(self):
+        first = make_recipe(self.author, title="Shared Name")
+        second = make_recipe(self.author, title="Shared Name")
+        self.assertNotEqual(first.slug, second.slug)
+
+
+class RecipeWriteImageAndMultipartTests(APITestCase):
+    """Cover uploads and the multipart JSON-list contract."""
+
+    def setUp(self):
+        self.author = User.objects.create_user(email="chef@example.com", password="StrongPass123!")
+
+    def _payload(self, **overrides):
+        payload = {
+            "title": "Uzbek Plov",
+            "description": "A classic dish.",
+            "cooking_time": 60,
+            "prep_time": 20,
+            "servings": 6,
+            "difficulty": Difficulty.MEDIUM,
+            "ingredients": [
+                {"name": "Rice", "quantity": "500", "unit": Unit.GRAM},
+                {"name": "Carrot", "quantity": "300", "unit": Unit.GRAM},
+            ],
+            "steps": [
+                {"step_number": 1, "instruction": "Wash the rice."},
+                {"step_number": 2, "instruction": "Cook it slowly."},
+            ],
+        }
+        payload.update(overrides)
+        return payload
+
+    def _multipart_payload(self, **overrides):
+        """Encode the lists the way a browser does: as JSON text.
+
+        ``multipart/form-data`` has no way to express nested structures, so a
+        real client sends ``ingredients``/``steps`` as a single JSON string.
+        """
+        payload = self._payload(**overrides)
+        for key in ("ingredients", "steps"):
+            if key in payload and not isinstance(payload[key], str):
+                payload[key] = json.dumps(payload[key])
+        return payload
+
+    def test_cover_image_is_accepted(self):
+        """Regression: cover_image was read_only, so uploads were impossible and
+        validate_cover_image was unreachable."""
+        client = auth_client(self.client)
+        payload = self._multipart_payload()
+        payload["cover_image"] = make_png()
+        resp = client.post("/api/v1/recipes/", payload, format="multipart")
+        self.assertEqual(resp.status_code, status.HTTP_201_CREATED, resp.data)
+        recipe = Recipe.objects.get(pk=resp.data["id"])
+        self.assertTrue(recipe.cover_image)
+
+    def test_rejects_a_non_image_cover(self):
+        client = auth_client(self.client)
+        payload = self._multipart_payload()
+        payload["cover_image"] = SimpleUploadedFile(
+            "cover.png", b"not really a png", content_type="image/png"
+        )
+        resp = client.post("/api/v1/recipes/", payload, format="multipart")
+        self.assertEqual(resp.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertIn("cover_image", resp.data["errors"])
+
+    def test_multipart_accepts_json_encoded_lists(self):
+        """Browsers cannot nest structures in multipart, so lists arrive as JSON
+        text. The endpoint must accept that shape."""
+        client = auth_client(self.client)
+        payload = self._multipart_payload()
+        payload["cover_image"] = make_png()
+        resp = client.post("/api/v1/recipes/", payload, format="multipart")
+        self.assertEqual(resp.status_code, status.HTTP_201_CREATED, resp.data)
+        recipe = Recipe.objects.get(pk=resp.data["id"])
+        self.assertEqual(recipe.recipe_ingredients.count(), 2)
+        self.assertEqual(recipe.steps.count(), 2)
+
+    def test_json_body_still_works_without_files(self):
+        client = auth_client(self.client)
+        resp = client.post("/api/v1/recipes/", self._payload(), format="json")
+        self.assertEqual(resp.status_code, status.HTTP_201_CREATED, resp.data)
+        recipe = Recipe.objects.get(pk=resp.data["id"])
+        self.assertEqual(recipe.recipe_ingredients.count(), 2)
+        self.assertEqual(recipe.steps.count(), 2)
+
+    def test_malformed_json_list_is_rejected(self):
+        client = auth_client(self.client)
+        payload = self._multipart_payload()
+        payload["ingredients"] = "{not json"
+        resp = client.post("/api/v1/recipes/", payload, format="multipart")
+        self.assertEqual(resp.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertIn("ingredients", resp.data["errors"])
 
 
 class RecipeSearchAndFilterTests(APITestCase):
