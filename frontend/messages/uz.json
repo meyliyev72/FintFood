@@ -185,7 +185,9 @@
     "matchBadge": "{percentage}% mos",
     "ingredientsOf": "{total} dan {available} ta mahsulot bor",
     "notFound": "Retsept topilmadi",
-    "notFoundHint": "U oʻchirilgan yoki hali koʻrib chiqilmoqda boʻlishi mumkin."
+    "notFoundHint": "U oʻchirilgan yoki hali koʻrib chiqilmoqda boʻlishi mumkin.",
+    "showLess": "Yopish",
+    "showAll": "Barcha {count} mahsulotni koʻrsatish"
   },
   "find": {
     "title": "Qanday mahsulotlaringiz bor?",
@@ -198,8 +200,14 @@
     "resultsFound": "{count, plural, =0 {Retsept topilmadi} one {# ta retsept topildi} other {# ta retsept topildi}}",
     "noResults": "Retsept topilmadi",
     "noResultsHint": "Bizning retseptlarimizda bu mahsulotlar hali ishlatilmagan. Boshqalarini qoʻshib koʻring.",
-    "matchesOnly": "Hozir tayyorlay oladiganlarini koʻrsatish",
-    "group": "Guruh"
+    "group": "Guruh",
+    "selectHint": "Uyda bor narsalarni belgilang, biz esa retseptlarni hozir tayyorlash mumkin boʻlgan darajasi boʻyicha tartiblaymiz.",
+    "noIngredients": "Bu qidiruv boʻyicha mahsulot topilmadi.",
+    "searching": "Moslashtiryapmiz…",
+    "selectedHint": "{count, plural, one {# mahsulot} other {# mahsulot}}",
+    "matchesOnlyHint": "Bu mahsulotlardan hech biri ishlatilmagan retseptlar koʻrsatilmaydi.",
+    "loadMore": "Yana koʻrsatish",
+    "sortedHint": "Sizda qancha borligi boʻyicha tartiblangan."
   },
   "shoppingList": {
     "title": "Xaridlar roʻyxati",

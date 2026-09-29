@@ -1,16 +1,16 @@
 "use client";
 
-import { Clock, Star, Users } from "lucide-react";
+import { Check, Clock, Plus, Star, Users } from "lucide-react";
 import { useTranslations } from "next-intl";
 import Image from "next/image";
-import { memo } from "react";
+import { memo, useState } from "react";
 
 import { Badge } from "@/components/ui";
 import { FavoriteButton } from "@/components/recipe/favorite-button";
 import { Link } from "@/i18n/navigation";
 import { mediaUrl } from "@/lib/api/client";
 import { cn } from "@/lib/utils";
-import type { Recipe } from "@/types";
+import type { Recipe, RecipeMatch } from "@/types";
 
 /**
  * Tiny cream-toned base64 image used as the `blur` placeholder so cards paint
@@ -24,23 +24,28 @@ const BLUR_PLACEHOLDER =
  *
  * `memo` matters here: the recipes list re-renders on every keystroke in the
  * search box, and cards are the most numerous nodes on the page.
+ *
+ * When `match` is supplied (Find by Ingredients, §8) the card also shows the
+ * "{X} of {Y} available" summary and the available / missing breakdown, and the
+ * badge becomes the match percentage.
  */
 export const RecipeCard = memo(function RecipeCard({
   recipe,
   priority = false,
   className,
-  matchPercentage,
+  match,
 }: {
   recipe: Recipe;
   /** Set on the first row so above-the-fold images are not lazy. */
   priority?: boolean;
   className?: string;
-  /** Only present on "Find by Ingredients" results. */
-  matchPercentage?: number;
+  /** Present only on "Find by Ingredients" results. */
+  match?: RecipeMatch;
 }) {
   const t = useTranslations("recipe");
   const tc = useTranslations("common");
   const image = mediaUrl(recipe.image);
+  const matchPercentage = match?.match_percentage;
 
   return (
     <article
@@ -133,7 +138,73 @@ export const RecipeCard = memo(function RecipeCard({
               rendered as-is rather than looked up in the message catalog. */}
           {recipe.difficulty ? <Badge size="sm">{recipe.difficulty}</Badge> : null}
         </div>
+
+        {match ? <MatchBreakdown match={match} /> : null}
       </div>
     </article>
   );
 });
+
+/**
+ * Available ✓ / missing + breakdown for a match result (§8).
+ *
+ * Long ingredient lists collapse to a one-line summary so a 12-ingredient
+ * recipe does not blow the grid row height; the full list is on the detail
+ * page, which is one click away.
+ */
+function MatchBreakdown({ match }: { match: RecipeMatch }) {
+  const t = useTranslations("recipe");
+  const available = match.matched_ingredients;
+  const missing = match.missing_ingredients;
+  const [expanded, setExpanded] = useState(false);
+  const PREVIEW = 4;
+  const isTruncated = available.length + missing.length > PREVIEW;
+
+  return (
+    <div className="mt-1 space-y-2 border-t border-border pt-3">
+      <p className="text-xs font-medium text-fg-muted">
+        {t("ingredientsOf", {
+          available: match.available_count,
+          total: match.total_count,
+        })}
+      </p>
+
+      <ul className="m-0 flex list-none flex-wrap gap-1.5 p-0">
+        {available.slice(0, expanded ? available.length : PREVIEW).map((ingredient) => (
+          <li
+            key={`a-${ingredient.id}`}
+            className="inline-flex max-w-full items-center gap-1 rounded-full bg-success-soft px-2 py-0.5 text-[11px] font-medium text-success"
+          >
+            <Check className="size-3 shrink-0" aria-hidden />
+            <span className="truncate">{ingredient.name}</span>
+          </li>
+        ))}
+
+        {missing.slice(0, expanded ? missing.length : PREVIEW).map((ingredient) => (
+          <li
+            key={`m-${ingredient.id}`}
+            className="inline-flex max-w-full items-center gap-1 rounded-full bg-danger-soft px-2 py-0.5 text-[11px] font-medium text-danger"
+          >
+            <Plus className="size-3 shrink-0" aria-hidden />
+            <span className="truncate">{ingredient.name}</span>
+            <span className="opacity-70">
+              {ingredient.quantity} {ingredient.unit}
+            </span>
+          </li>
+        ))}
+      </ul>
+
+      {isTruncated ? (
+        <button
+          type="button"
+          onClick={() => setExpanded((value) => !value)}
+          className="text-xs font-medium text-fg-brand underline-offset-4 transition-colors hover:underline"
+        >
+          {expanded ? t("showLess") : t("showAll", {
+            count: available.length + missing.length,
+          })}
+        </button>
+      ) : null}
+    </div>
+  );
+}

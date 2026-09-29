@@ -35,13 +35,13 @@ export function RecipeGrid({
       )}
     >
       {recipes.map((recipe, index) => {
-        const match = matchMode ? (recipe as RecipeMatch) : null;
+        const match = matchMode ? (recipe as RecipeMatch) : undefined;
         return (
           <motion.li key={recipe.id} variants={staggerItem} className="flex">
             <RecipeCard
               recipe={recipe}
               priority={index < priorityCount}
-              matchPercentage={match?.match_percentage}
+              match={match}
               className="w-full"
             />
           </motion.li>

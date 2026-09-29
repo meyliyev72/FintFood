@@ -185,7 +185,9 @@
     "matchBadge": "{percentage}% match",
     "ingredientsOf": "{available} of {total} ingredients available",
     "notFound": "Recipe not found",
-    "notFoundHint": "It may have been removed or is still being reviewed."
+    "notFoundHint": "It may have been removed or is still being reviewed.",
+    "showLess": "Show less",
+    "showAll": "Show all {count} ingredients"
   },
   "find": {
     "title": "What ingredients do you have?",
@@ -198,8 +200,14 @@
     "resultsFound": "{count, plural, =0 {No recipes found} one {# recipe found} other {# recipes found}}",
     "noResults": "No recipes found",
     "noResultsHint": "None of our recipes use those ingredients yet. Try adding one or two more.",
-    "matchesOnly": "Only show recipes I can make now",
-    "group": "Group"
+    "group": "Group",
+    "selectHint": "Pick anything in your kitchen and we'll rank recipes by how much of each one you can already make.",
+    "noIngredients": "No ingredients match that search.",
+    "searching": "Matching…",
+    "selectedHint": "{count, plural, one {# ingredient in your kitchen} other {# ingredients in your kitchen}}",
+    "matchesOnlyHint": "Recipes that use none of these are left out.",
+    "loadMore": "Load more",
+    "sortedHint": "Sorted by how much of each recipe you already have."
   },
   "shoppingList": {
     "title": "Shopping List",
