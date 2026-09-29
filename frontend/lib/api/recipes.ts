@@ -21,7 +21,6 @@ export interface RecipeWriteIngredient {
 export interface RecipeWriteStep {
   step_number: number;
   instruction: string;
-  image?: File | null;
 }
 
 export interface RecipeWriteInput {
@@ -53,6 +52,52 @@ function toQuery(filters: RecipeFilters): Record<string, string | number> {
   return query;
 }
 
+/**
+ * Builds the multipart body for create/update.
+ *
+ * `ingredients` and `steps` are nested structures, which `multipart/form-data`
+ * cannot express, so they travel as JSON text. The server's `JSONListField`
+ * accepts exactly that (and a plain list, so the JSON body path still works).
+ * DRF's bracket-index convention (`steps[0][instruction]`) does *not* round-trip
+ * here and is deliberately not used.
+ */
+function toFormData(input: RecipeWriteInput): FormData {
+  const { cover_image, extra_images, ...rest } = input;
+  const payload = new FormData();
+  payload.set("title", rest.title);
+  payload.set("description", rest.description);
+  payload.set("cooking_time", String(rest.cooking_time));
+  payload.set("prep_time", String(rest.prep_time));
+  payload.set("servings", String(rest.servings));
+  payload.set("difficulty", rest.difficulty);
+  if (rest.category_id) payload.set("category_id", String(rest.category_id));
+  if (rest.status) payload.set("status", rest.status);
+  if (rest.calories != null) payload.set("calories", String(rest.calories));
+  if (rest.protein != null) payload.set("protein", String(rest.protein));
+  if (rest.carbs != null) payload.set("carbs", String(rest.carbs));
+  if (rest.fat != null) payload.set("fat", String(rest.fat));
+  if (cover_image) payload.set("cover_image", cover_image);
+  payload.set(
+    "ingredients",
+    JSON.stringify(
+      rest.ingredients.map(({ ingredient_id, name, quantity, unit }) => ({
+        ...(ingredient_id ? { ingredient_id } : {}),
+        ...(ingredient_id ? {} : { name }),
+        quantity: String(quantity),
+        unit,
+      })),
+    ),
+  );
+  payload.set(
+    "steps",
+    JSON.stringify(
+      rest.steps.map(({ step_number, instruction }) => ({ step_number, instruction })),
+    ),
+  );
+  extra_images?.forEach((file) => payload.append("extra_images", file));
+  return payload;
+}
+
 export const recipesApi = {
   /** Paginated, filterable list. `page` is 1-based. */
   list: (filters: RecipeFilters = {}, ctx: Ctx = {}) =>
@@ -68,67 +113,11 @@ export const recipesApi = {
 
   detail: (slug: string, ctx: Ctx = {}) => api.get<Recipe>(`/recipes/${slug}/`, ctx),
 
-  create: (input: RecipeWriteInput, ctx: Ctx = {}) => {
-    const { cover_image, extra_images, ...rest } = input;
-    const payload = new FormData();
-    payload.set("title", rest.title);
-    payload.set("description", rest.description);
-    payload.set("cooking_time", String(rest.cooking_time));
-    payload.set("prep_time", String(rest.prep_time));
-    payload.set("servings", String(rest.servings));
-    payload.set("difficulty", rest.difficulty);
-    if (rest.category_id) payload.set("category_id", String(rest.category_id));
-    if (rest.status) payload.set("status", rest.status);
-    if (rest.calories != null) payload.set("calories", String(rest.calories));
-    if (rest.protein != null) payload.set("protein", String(rest.protein));
-    if (rest.carbs != null) payload.set("carbs", String(rest.carbs));
-    if (rest.fat != null) payload.set("fat", String(rest.fat));
-    if (cover_image) payload.set("cover_image", cover_image);
-    rest.ingredients.forEach((item, index) => {
-      payload.set(`ingredients[${index}][quantity]`, String(item.quantity));
-      payload.set(`ingredients[${index}][unit]`, item.unit);
-      if (item.ingredient_id) payload.set(`ingredients[${index}][ingredient_id]`, String(item.ingredient_id));
-      else if (item.name) payload.set(`ingredients[${index}][name]`, item.name);
-    });
-    rest.steps.forEach((step, index) => {
-      payload.set(`steps[${index}][step_number]`, String(step.step_number));
-      payload.set(`steps[${index}][instruction]`, step.instruction);
-      if (step.image) payload.set(`steps[${index}][image]`, step.image);
-    });
-    extra_images?.forEach((file) => payload.append("extra_images", file));
-    return api.post<Recipe>("/recipes/", payload, ctx);
-  },
+  create: (input: RecipeWriteInput, ctx: Ctx = {}) =>
+    api.post<Recipe>("/recipes/", toFormData(input), ctx),
 
-  update: (slug: string, input: RecipeWriteInput, ctx: Ctx = {}) => {
-    const { cover_image, extra_images, ...rest } = input;
-    const payload = new FormData();
-    payload.set("title", rest.title);
-    payload.set("description", rest.description);
-    payload.set("cooking_time", String(rest.cooking_time));
-    payload.set("prep_time", String(rest.prep_time));
-    payload.set("servings", String(rest.servings));
-    payload.set("difficulty", rest.difficulty);
-    if (rest.category_id) payload.set("category_id", String(rest.category_id));
-    if (rest.status) payload.set("status", rest.status);
-    if (rest.calories != null) payload.set("calories", String(rest.calories));
-    if (rest.protein != null) payload.set("protein", String(rest.protein));
-    if (rest.carbs != null) payload.set("carbs", String(rest.carbs));
-    if (rest.fat != null) payload.set("fat", String(rest.fat));
-    if (cover_image) payload.set("cover_image", cover_image);
-    rest.ingredients.forEach((item, index) => {
-      payload.set(`ingredients[${index}][quantity]`, String(item.quantity));
-      payload.set(`ingredients[${index}][unit]`, item.unit);
-      if (item.ingredient_id) payload.set(`ingredients[${index}][ingredient_id]`, String(item.ingredient_id));
-      else if (item.name) payload.set(`ingredients[${index}][name]`, item.name);
-    });
-    rest.steps.forEach((step, index) => {
-      payload.set(`steps[${index}][step_number]`, String(step.step_number));
-      payload.set(`steps[${index}][instruction]`, step.instruction);
-      if (step.image) payload.set(`steps[${index}][image]`, step.image);
-    });
-    extra_images?.forEach((file) => payload.append("extra_images", file));
-    return api.patch<Recipe>(`/recipes/${slug}/`, payload, ctx);
-  },
+  update: (slug: string, input: RecipeWriteInput, ctx: Ctx = {}) =>
+    api.patch<Recipe>(`/recipes/${slug}/`, toFormData(input), ctx),
 
   remove: (slug: string, ctx: Ctx = {}) =>
     api.delete<DeleteResponse>(`/recipes/${slug}/`, ctx),

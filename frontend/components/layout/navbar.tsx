@@ -112,7 +112,7 @@ export function Navbar({ onOpenUtilities }: { onOpenUtilities: () => void }) {
             <UtilityButton onClick={onOpenUtilities} />
             <AuthMenu />
             <Button asChild size="sm" className="ml-1">
-              <Link href="/recipes/new">
+              <Link href="/recipes/create">
                 <Plus aria-hidden />
                 {t("createRecipe")}
               </Link>

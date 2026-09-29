@@ -38,10 +38,13 @@ class RecipeIngredientSerializer(serializers.ModelSerializer):
     slug = serializers.SlugField(source="ingredient.slug", read_only=True)
     category = serializers.SerializerMethodField()
     unit = serializers.SerializerMethodField()
+    # `unit` is a translated label, so an edit form cannot round-trip it back
+    # into a write payload without this raw key.
+    unit_code = serializers.CharField(source="unit", read_only=True)
 
     class Meta:
         model = RecipeIngredient
-        fields = ["id", "name", "slug", "category", "quantity", "unit"]
+        fields = ["id", "name", "slug", "category", "quantity", "unit", "unit_code"]
 
     def _language(self):
         return get_request_language(self.context.get("request"))
@@ -110,6 +113,9 @@ class RecipeListSerializer(serializers.ModelSerializer):
     ingredients_count = serializers.IntegerField(read_only=True)
     total_time = serializers.IntegerField(read_only=True)
     difficulty = serializers.SerializerMethodField()
+    # `difficulty` is localized for display; this keeps the raw enum key so an
+    # edit form can pre-select the right option.
+    difficulty_code = serializers.CharField(source="difficulty", read_only=True)
 
     class Meta:
         model = Recipe
@@ -126,6 +132,7 @@ class RecipeListSerializer(serializers.ModelSerializer):
             "total_time",
             "servings",
             "difficulty",
+            "difficulty_code",
             "average_rating",
             "review_count",
             "is_favorite",

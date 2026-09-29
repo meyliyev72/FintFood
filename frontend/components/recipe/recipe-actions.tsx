@@ -1,7 +1,7 @@
 ﻿"use client";
 
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { Check, ShoppingBasket } from "lucide-react";
+import { Check, Pencil, ShoppingBasket } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { useState } from "react";
 import { toast } from "sonner";
@@ -9,7 +9,7 @@ import { toast } from "sonner";
 import { FavoriteButton } from "@/components/recipe/favorite-button";
 import { Button } from "@/components/ui";
 import { nextParam } from "@/hooks/use-safe-redirect";
-import { usePathname, useRouter } from "@/i18n/navigation";
+import { Link, usePathname, useRouter } from "@/i18n/navigation";
 import { ApiError } from "@/lib/api/client";
 import { shoppingListApi } from "@/lib/api";
 import { queryKeys } from "@/lib/query-keys";
@@ -31,7 +31,7 @@ export function RecipeActions({ recipe }: { recipe: Recipe }) {
   const router = useRouter();
   const pathname = usePathname();
   const queryClient = useQueryClient();
-  const { isAuthenticated, isLoading } = useAuth();
+  const { isAuthenticated, isLoading, user } = useAuth();
   const [added, setAdded] = useState(false);
 
   const mutation = useMutation({
@@ -84,6 +84,17 @@ export function RecipeActions({ recipe }: { recipe: Recipe }) {
         variant="inline"
         className="h-12"
       />
+
+      {/* Owner-only. The API enforces this too (`IsOwnerOrReadOnly`); hiding it
+          keeps a stray edit URL from looking like a broken page. */}
+      {!isLoading && isAuthenticated && user?.id === recipe.author.id ? (
+        <Button asChild variant="secondary" size="lg" className="h-12">
+          <Link href={`/recipes/${recipe.slug}/edit`}>
+            <Pencil aria-hidden />
+            {t("editRecipe")}
+          </Link>
+        </Button>
+      ) : null}
 
       {!isLoading && !isAuthenticated ? (
         <button

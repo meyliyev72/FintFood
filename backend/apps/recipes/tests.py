@@ -210,6 +210,28 @@ class RecipeCrudTests(APITestCase):
         second = make_recipe(self.author, title="Shared Name")
         self.assertNotEqual(first.slug, second.slug)
 
+    def test_read_exposes_raw_codes_next_to_localized_labels(self):
+        """`difficulty` and the ingredient `unit` are translated for display, so
+        the raw enum keys travel alongside them: without these an edit form
+        cannot pre-select the right options or round-trip a save."""
+        recipe = make_recipe(
+            self.author, title="Code Check", ingredients=("Flour",)
+        )
+        RecipeIngredient.objects.filter(recipe=recipe).update(unit=Unit.GRAM, quantity=2)
+        recipe.difficulty = Difficulty.HARD
+        recipe.save()
+
+        resp = self.client.get(f"/api/v1/recipes/{recipe.slug}/?lang=en")
+        self.assertEqual(resp.status_code, status.HTTP_200_OK)
+        self.assertEqual(resp.data["difficulty_code"], "hard")
+        self.assertEqual(resp.data["ingredients"][0]["unit_code"], "g")
+
+        # The localized label is still what the display uses.
+        ru = self.client.get(f"/api/v1/recipes/{recipe.slug}/?lang=ru")
+        self.assertEqual(ru.data["difficulty_code"], "hard")
+        self.assertEqual(ru.data["ingredients"][0]["unit_code"], "g")
+        self.assertEqual(ru.data["ingredients"][0]["unit"], "г")
+
 
 class RecipeWriteImageAndMultipartTests(APITestCase):
     """Cover uploads and the multipart JSON-list contract."""

@@ -25,6 +25,9 @@ export type Unit = "g" | "kg" | "ml" | "l" | "pcs" | "tbsp" | "tsp" | "cup" | "c
  */
 export type UnitLabel = string;
 
+/** Matches `Difficulty` in backend/apps/recipes/models.py. */
+export type DifficultyCode = "easy" | "medium" | "hard";
+
 /** Matches `RecipeStatus` in backend/apps/recipes/models.py. */
 export type RecipeStatus = "draft" | "pending" | "published" | "rejected";
 
@@ -90,6 +93,8 @@ export interface RecipeIngredient {
   quantity: string;
   /** Pre-localized display label, not a raw `Unit`. */
   unit: UnitLabel;
+  /** The raw `Unit` key, so an edit form can round-trip it into a write payload. */
+  unit_code: Unit;
 }
 
 export interface InstructionStep {
@@ -118,6 +123,8 @@ export interface Recipe {
   servings: number;
   /** Translated server-side via `localized_choice("difficulty", ...)`. */
   difficulty: string;
+  /** The raw enum key behind `difficulty`, for edit forms. */
+  difficulty_code: DifficultyCode;
   average_rating: number | null;
   review_count: number;
   is_favorite: boolean;
